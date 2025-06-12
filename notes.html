@@ -4,41 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Haru Notes</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="firebase-config.js" defer></script>
+    <script src="auth.js" defer></script>
 </head>
 <body>
-
-    <header class="main-header" style="display: none;">
-        <div class="header-left">
-            <div class="header-brand">
-                <h1>Haru Notes</h1>
+    <div id="app-wrapper" class="app-wrapper hidden">
+        <header class="main-header">
+            <div class="header-left">
+                <div class="header-brand">
+                    <h1>Haru Notes</h1>
+                </div>
                 <span id="user-email-display" class="user-email"></span>
             </div>
-        </div>
-        <div class="header-right">
-            <button id="add-note-btn" class="btn btn-primary">
-                <span class="desktop-text">Buat Catatan Baru</span>
-                <span class="mobile-icon">+</span>
-            </button>
-            <button id="logout-button" class="btn btn-danger">
-                <span class="desktop-text">Logout</span>
-                <span class="mobile-icon">⏏</span>
-            </button>
-        </div>
-    </header>
+            <div class="header-right">
+                <button id="add-note-btn" class="btn btn-primary">Buat Catatan Baru</button>
+                <button id="logout-button" class="btn btn-danger">Logout</button>
+            </div>
+        </header>
 
-    <div id="app-wrapper" style="display: none;">
-        <main>
+        <main class="container">
+            <div id="no-notes-message" class="no-notes-message hidden">
+                Belum ada catatan. Buat yang baru yuk!
+            </div>
             <div id="notes-container" class="notes-container">
-            </div>
-            <div id="no-notes-message" class="hidden">
-                <p>Belum ada catatan. Klik "Buat Catatan Baru" untuk memulai!</p>
-            </div>
+                </div>
         </main>
 
         <div id="modal-container" class="modal-container hidden">
@@ -51,29 +45,13 @@
                         <input type="text" id="note-title" required>
                     </div>
                     <div class="form-group">
-                        <label for="note-content">Isi Catatan</label>
+                        <label>Isi Catatan</label>
+                        <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Masukkan isi catatan Anda..." required></div>
                         <div class="style-buttons">
                             <button type="button" id="bold-btn" class="style-btn" title="Bold">B</button>
                             <button type="button" id="italic-btn" class="style-btn" title="Italic">I</button>
                             <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
-                        </div>
-                        <div id="modal-container" class="modal-container hidden">
-            <div class="modal-content">
-                <button class="close-modal-btn">&times;</button>
-                <form id="note-form">
-                    <input type="hidden" id="note-id">
-                    <div class="form-group">
-                        <label for="note-title">Judul</label>
-                        <input type="text" id="note-title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="note-content">Isi Catatan</label>
-                        <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Masukkan isi catatan Anda" required></div>
-                        <div class="style-buttons">
-                            <button type="button" id="bold-btn" class="style-btn" title="Bold">B</button>
-                            <button type="button" id="italic-btn" class="style-btn" title="Italic">I</button>
-                            <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
-                        </div>
+                            </div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Simpan</button>
@@ -82,14 +60,7 @@
                 </form>
             </div>
         </div>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-    
-    <script src="firebase-config.js"></script>
-    
+    </div>
     <script src="script.js"></script>
-    
 </body>
 </html>

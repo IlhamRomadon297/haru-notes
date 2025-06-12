@@ -12,7 +12,7 @@ const closeModalBtn = document.querySelector('.close-modal-btn');
 const noteForm = document.getElementById('note-form');
 const noteIdInput = document.getElementById('note-id');
 const noteTitleInput = document.getElementById('note-title');
-const noteContentEditor = document.getElementById('note-content-editor'); // <--- BERUBAH: DARI noteContentInput MENJADI noteContentEditor
+const noteContentEditor = document.getElementById('note-content-editor'); // <--- PASTIKAN INI BENAR
 const deleteNoteBtn = document.getElementById('delete-note-btn');
 const noNotesMessage = document.getElementById('no-notes-message');
 const logoutButton = document.getElementById('logout-button');
@@ -74,14 +74,13 @@ const renderNotes = (notesData) => {
             // Untuk membatasi tampilan dan ellipsis, kita akan menggunakan textContent untuk preview dan CSS
             // Ini akan menghilangkan formatting di preview card, tapi memastikan tidak memanjang.
             // Jika ingin visual formatting di preview card, akan lebih kompleks (sanitasi HTML)
-            const previewContent = document.createElement('div');
-            previewContent.innerHTML = note.content;
-            previewContent.classList.add('note-card-content');
+            const previewContentElement = document.createElement('div');
+            previewContentElement.innerHTML = note.content; // Render HTML di elemen sementara
             
             // Batasi tampilan konten di card agar tidak memanjang
             // Kita akan menggunakan textContent untuk membuang HTML saat memotong teks,
             // lalu apply CSS ellipsis. Ini akan membuat tampilan preview tetap rapi.
-            const plainTextContent = previewContent.textContent || previewContent.innerText;
+            const plainTextContent = previewContentElement.textContent || previewContentElement.innerText;
             const maxPreviewLength = 200; // Contoh: potong setelah 200 karakter
             let displayContent = plainTextContent;
             if (plainTextContent.length > maxPreviewLength) {
@@ -113,8 +112,9 @@ const openModal = (note = null) => {
         noteIdInput.value = '';
         deleteNoteBtn.classList.add('hidden'); 
     }
-    // Periksa placeholder
+    // Panggil updatePlaceholder setiap kali modal dibuka
     updatePlaceholder();
+    noteContentEditor.focus(); // Pastikan editor langsung fokus saat modal terbuka
     modalContainer.classList.remove('hidden');
 };
 
@@ -221,27 +221,33 @@ if (logoutButton) {
 
 // --- START Text Styling Functions (Menggunakan execCommand) ---
 
-boldBtn.addEventListener('click', () => {
+boldBtn.addEventListener('click', (event) => {
+    event.preventDefault(); // Mencegah tombol submit form jika di dalam form
     document.execCommand('bold', false, null);
     noteContentEditor.focus(); // Pastikan fokus kembali ke editor
     updatePlaceholder();
 });
 
-italicBtn.addEventListener('click', () => {
+italicBtn.addEventListener('click', (event) => {
+    event.preventDefault(); // Mencegah tombol submit form jika di dalam form
     document.execCommand('italic', false, null);
     noteContentEditor.focus(); // Pastikan fokus kembali ke editor
     updatePlaceholder();
 });
 
-uppercaseBtn.addEventListener('click', () => {
+uppercaseBtn.addEventListener('click', (event) => {
+    event.preventDefault(); // Mencegah tombol submit form jika di dalam form
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const selectedText = range.toString();
 
         if (selectedText) {
+            // Mengubah teks yang dipilih menjadi uppercase
+            // Karena execCommand tidak punya 'uppercase', kita manipulasi DOM langsung
             const span = document.createElement('span');
             span.textContent = selectedText.toUpperCase();
+            
             range.deleteContents();
             range.insertNode(span);
 
