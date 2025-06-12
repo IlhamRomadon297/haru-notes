@@ -13,6 +13,27 @@ const noteForm = document.getElementById('note-form');
 const noteIdInput = document.getElementById('note-id');
 const noteTitleInput = document.getElementById('note-title');
 const noteContentInput = document.getElementById('note-content');
+// script.js
+// ... kode lainnya ...
+
+    // --- PEMILIHAN ELEMEN DOM ---
+    const notesContainer = document.getElementById('notes-container');
+    const addNoteBtn = document.getElementById('add-note-btn');
+    const modalContainer = document.getElementById('modal-container');
+    const closeModalBtn = document.querySelector('.close-modal-btn');
+    const noteForm = document.getElementById('note-form');
+    const noteIdInput = document.getElementById('note-id');
+    const noteTitleInput = document.getElementById('note-title');
+    const noteContentInput = document.getElementById('note-content'); // Ini sudah ada
+    const deleteNoteBtn = document.getElementById('delete-note-btn');
+    const noNotesMessage = document.getElementById('no-notes-message');
+    // START New DOM Elements for Styling
+    const boldBtn = document.getElementById('bold-btn');
+    const italicBtn = document.getElementById('italic-btn');
+    const uppercaseBtn = document.getElementById('uppercase-btn');
+    // END New DOM Elements for Styling
+
+// ... kode lainnya ...
 const deleteNoteBtn = document.getElementById('delete-note-btn');
 const noNotesMessage = document.getElementById('no-notes-message');
 const logoutButton = document.getElementById('logout-button');
@@ -261,3 +282,71 @@ window.addEventListener('scroll', () => {
         mainHeader.classList.remove('header-hidden');
     }
 });
+// script.js
+// ... kode fungsi lainnya (renderNotes, openModal, closeModal, event listeners untuk form dan delete, logout) ...
+
+// --- START New Text Styling Functions ---
+
+// Helper function to insert text at cursor position or wrap selection
+function insertAtCursor(textarea, textToInsert) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+
+    textarea.value = value.substring(0, start) + textToInsert + value.substring(end);
+    // Move cursor to end of inserted text if nothing was selected
+    textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+    textarea.focus();
+}
+
+function wrapSelection(textarea, prefix, suffix) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    const selectedText = value.substring(start, end);
+
+    if (selectedText) {
+        // If text is selected, wrap it
+        textarea.value = value.substring(0, start) + prefix + selectedText + suffix + value.substring(end);
+        // Reselect the wrapped text
+        textarea.selectionStart = start;
+        textarea.selectionEnd = start + prefix.length + selectedText.length + suffix.length;
+    } else {
+        // If no text is selected, insert prefixes/suffixes and put cursor in between
+        textarea.value = value.substring(0, start) + prefix + suffix + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + prefix.length;
+    }
+    textarea.focus();
+}
+
+boldBtn.addEventListener('click', () => {
+    wrapSelection(noteContentInput, '**', '**');
+});
+
+italicBtn.addEventListener('click', () => {
+    wrapSelection(noteContentInput, '*', '*');
+});
+
+uppercaseBtn.addEventListener('click', () => {
+    const textarea = noteContentInput;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    const selectedText = value.substring(start, end);
+
+    if (selectedText) {
+        textarea.value = value.substring(0, start) + selectedText.toUpperCase() + value.substring(end);
+        textarea.selectionStart = start;
+        textarea.selectionEnd = end;
+    } else {
+        // If no text is selected, convert entire content (or prompt user)
+        // For simplicity, let's just do nothing if no text selected for Uppercase
+        // or you could convert entire content:
+        // textarea.value = textarea.value.toUpperCase();
+    }
+    textarea.focus();
+});
+
+// --- END New Text Styling Functions ---
+
+// ... kode onAuthStateChanged di bawahnya ...
