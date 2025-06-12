@@ -1,10 +1,12 @@
-// firebase-config.js (Pastikan ini adalah yang pertama)
+// auth.js
+// Ini adalah satu-satunya file yang berisi konfigurasi Firebase dan inisialisasi
 // Pastikan variabel 'firebase' global sudah tersedia setelah SDK dimuat di HTML
 
 // Konfigurasi Firebase Anda
 const firebaseConfig = {
   apiKey: "AIzaSyArh4UTIxL3OItvkDB81Yji9rUdCWfXjao",
   authDomain: "haru-notes-app.firebaseapp.com",
+  databaseURL: "https://haru-notes-app-default-rtdb.firebaseio.com/", // Ganti dengan Database URL Anda
   projectId: "haru-notes-app",
   storageBucket: "haru-notes-app.firebasestorage.app",
   messagingSenderId: "229174022392",
@@ -14,9 +16,9 @@ const firebaseConfig = {
 // Inisialisasi Firebase (hanya sekali)
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
-    console.log('Firebase App initialized from firebase-config.js'); 
+    console.log('Firebase App initialized from auth.js'); 
 } else {
-    console.log('Firebase App already initialized.');
+    console.log('Firebase App already initialized. From auth.js');
 }
 
 // Dapatkan referensi untuk layanan yang akan digunakan
@@ -24,10 +26,8 @@ const auth = firebase.auth();
 const database = firebase.database();
 
 // console.log untuk debugging
-console.log('auth object defined:', !!auth);
-console.log('database object defined:', !!database);
-
-// auth.js (Pastikan ini dimuat SETELAH firebase-config.js)
+console.log('auth object defined from auth.js:', !!auth);
+console.log('database object defined from auth.js:', !!database);
 
 // Pastikan elemen-elemen login sudah ada
 const loginForm = document.getElementById('login-form');
