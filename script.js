@@ -26,6 +26,9 @@ const uppercaseBtn = document.getElementById('uppercase-btn');
 let currentUserId = null; 
 let notesRef = null; 
 
+// Tambahkan variabel untuk melacak listener Firebase
+let notesListener = null; 
+
 const formatTimestamp = (timestamp) => {
     if (!timestamp) return 'Tidak diketahui';
     const date = new Date(timestamp);
@@ -67,25 +70,22 @@ const renderNotes = (notesData) => {
 
             const lastEditedText = note.timestamp ? `Terakhir diedit: ${formatTimestamp(note.timestamp)}` : 'Tidak diketahui';
 
-            // --- PERUBAHAN UTAMA DI SINI ---
-            // Langsung masukkan HTML content ke dalam div, lalu biarkan CSS yang membatasi
             const noteContentElement = document.createElement('div');
             noteContentElement.classList.add('note-card-content');
-            noteContentElement.innerHTML = note.content; // Render HTML asli dari editor
-
-            // Karena kita merender HTML, pemotongan konten harus dilakukan secara berbeda.
-            // Kita akan menggunakan -webkit-line-clamp di CSS untuk pemotongan berbasis baris.
-            // Tidak perlu lagi memotong string di JS.
-            // Namun, untuk memastikan HTML yang terlalu panjang tidak membuat card terlalu tinggi
-            // dan tetap menampilkan ellipsis, kita perlu memastikan CSS bekerja dengan baik.
+            
+            // Masalah yang Anda laporkan terulang karena validasi konten kosong.
+            // Saat innerHTML kosong atau hanya mengandung <br>, itu dianggap kosong.
+            // Kita perlu membersihkan konten dari tag HTML jika ingin memotongnya berdasarkan teks murni
+            // atau pastikan CSS line-clamp berfungsi dengan baik.
+            // Dengan innerHTML, formatting tetap terjaga.
+            noteContentElement.innerHTML = note.content; 
 
             noteCard.innerHTML = `
                 <h2 class="note-card-title">${note.title}</h2>
                 <p class="note-last-edited">${lastEditedText}</p>
             `;
-            // Masukkan elemen konten setelah judul
+            // Masukkan elemen konten yang sudah diformat setelah judul
             noteCard.insertBefore(noteContentElement, noteCard.querySelector('.note-last-edited'));
-            // --- AKHIR PERUBAHAN UTAMA ---
             
             noteCard.addEventListener('click', () => openModal(note));
             notesContainer.appendChild(noteCard);
@@ -115,14 +115,16 @@ const closeModal = () => {
 };
 
 function updatePlaceholder() {
-    // Memastikan placeholder berfungsi jika hanya ada tag HTML kosong atau spasi
-    const contentCheckDiv = document.createElement('div');
-    contentCheckDiv.innerHTML = noteContentEditor.innerHTML;
-    // Mengambil plain text dan menghapus spasi
-    const plainText = contentCheckDiv.textContent.trim(); 
+    // Memastikan placeholder berfungsi jika hanya ada tag HTML kosong atau spasi.
+    // Gunakan DOMParser untuk menganalisis konten dengan lebih aman dan akurat.
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(noteContentEditor.innerHTML, 'text/html');
+    const plainText = doc.body.textContent.trim(); 
 
-    if (plainText === '' && noteContentEditor.innerHTML.indexOf('<img') === -1) { 
-        // Cek jika plain text kosong dan tidak ada gambar (jika ada gambar yang mungkin disisipkan)
+    // Jika plainText kosong, atau jika innerHTML hanya berisi <br> atau spasi html (&nbsp;), 
+    // anggap sebagai kosong untuk placeholder.
+    // Juga tambahkan kondisi untuk mengatasi jika user menghapus semua konten.
+    if (plainText === '' && !noteContentEditor.querySelector('img')) { // Cek juga jika ada gambar
         noteContentEditor.classList.remove('has-content');
     } else {
         noteContentEditor.classList.add('has-content');
@@ -154,10 +156,21 @@ noteForm.addEventListener('submit', async (e) => {
     const title = noteTitleInput.value.trim();
     const content = noteContentEditor.innerHTML.trim(); 
 
-    // Validasi isi catatan juga harus memeriksa plain text content
-    const plainTextContentForValidation = noteContentEditor.textContent.trim();
-    if (!title || !plainTextContentForValidation) { 
-        alert('Judul dan Isi Catatan tidak boleh kosong!');
+    // Validasi isi catatan juga harus memeriksa plain text content.
+    // Gunakan DOMParser untuk mendapatkan plain text yang akurat dari HTML.
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/html');
+    const plainTextContentForValidation = doc.body.textContent.trim();
+
+    if (!title) { // Judul tidak boleh kosong
+        alert('Judul tidak boleh kosong!');
+        return;
+    }
+    
+    // Periksa apakah plainTextContentForValidation kosong.
+    // Jika hanya berisi whitespace atau tag kosong setelah di-trim, anggap kosong.
+    if (plainTextContentForValidation === '' && !doc.body.querySelector('img')) { // Cek juga jika ada gambar
+        alert('Isi Catatan tidak boleh kosong!');
         return;
     }
 
@@ -207,8 +220,15 @@ deleteNoteBtn.addEventListener('click', async () => {
 if (logoutButton) {
     logoutButton.addEventListener('click', async () => {
         try {
+            // Hapus listener Firebase sebelum logout
+            if (notesRef && notesListener) {
+                notesRef.off('value', notesListener);
+                notesListener = null; // Reset listener
+                console.log('Firebase listener dimatikan.');
+            }
             await auth.signOut(); 
             console.log('Pengguna berhasil logout.');
+            // Segera alihkan ke halaman login
             window.location.href = 'index.html'; 
         } catch (error) {
             console.error("Logout Error:", error);
@@ -281,27 +301,35 @@ auth.onAuthStateChanged((user) => {
 
             notesRef = database.ref('notes/' + currentUserId); 
 
-            notesRef.on('value', (snapshot) => {
-                const notesData = snapshot.val();
-                renderNotes(notesData);
-            }, (error) => {
-                console.error("Error fetching notes:", error);
-                alert("Gagal memuat catatan: " + error.message);
-            });
+            // Cek apakah listener sudah ada, jika belum, tambahkan
+            if (!notesListener) {
+                notesListener = notesRef.on('value', (snapshot) => {
+                    const notesData = snapshot.val();
+                    renderNotes(notesData);
+                }, (error) => {
+                    console.error("Error fetching notes:", error);
+                    // Hapus alert ini agar tidak muncul saat permission denied setelah logout
+                    // alert("Gagal memuat catatan: " + error.message); 
+                });
+            }
 
         } else {
             console.log('Pengguna belum login di halaman notes. Mengalihkan ke halaman login.');
             currentUserId = null;
-            notesRef = null;
+            
+            // Matikan listener jika ada sebelum redirect
+            if (notesRef && notesListener) {
+                notesRef.off('value', notesListener);
+                notesListener = null;
+            }
 
             requestAnimationFrame(() => {
                 if (appWrapper) appWrapper.style.display = 'none'; 
                 if (mainHeader) mainHeader.style.display = 'none'; 
             });
 
-            setTimeout(() => {
-                window.location.href = 'index.html'; 
-            }, 100);
+            // Redirect lebih cepat
+            window.location.href = 'index.html'; 
         }
     } else {
         requestAnimationFrame(() => {
