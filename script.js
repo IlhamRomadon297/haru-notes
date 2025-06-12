@@ -73,18 +73,12 @@ const renderNotes = (notesData) => {
             const noteContentElement = document.createElement('div');
             noteContentElement.classList.add('note-card-content');
             
-            // Masalah yang Anda laporkan terulang karena validasi konten kosong.
-            // Saat innerHTML kosong atau hanya mengandung <br>, itu dianggap kosong.
-            // Kita perlu membersihkan konten dari tag HTML jika ingin memotongnya berdasarkan teks murni
-            // atau pastikan CSS line-clamp berfungsi dengan baik.
-            // Dengan innerHTML, formatting tetap terjaga.
             noteContentElement.innerHTML = note.content; 
 
             noteCard.innerHTML = `
                 <h2 class="note-card-title">${note.title}</h2>
                 <p class="note-last-edited">${lastEditedText}</p>
             `;
-            // Masukkan elemen konten yang sudah diformat setelah judul
             noteCard.insertBefore(noteContentElement, noteCard.querySelector('.note-last-edited'));
             
             noteCard.addEventListener('click', () => openModal(note));
@@ -115,16 +109,11 @@ const closeModal = () => {
 };
 
 function updatePlaceholder() {
-    // Memastikan placeholder berfungsi jika hanya ada tag HTML kosong atau spasi.
-    // Gunakan DOMParser untuk menganalisis konten dengan lebih aman dan akurat.
     const parser = new DOMParser();
     const doc = parser.parseFromString(noteContentEditor.innerHTML, 'text/html');
     const plainText = doc.body.textContent.trim(); 
 
-    // Jika plainText kosong, atau jika innerHTML hanya berisi <br> atau spasi html (&nbsp;), 
-    // anggap sebagai kosong untuk placeholder.
-    // Juga tambahkan kondisi untuk mengatasi jika user menghapus semua konten.
-    if (plainText === '' && !noteContentEditor.querySelector('img')) { // Cek juga jika ada gambar
+    if (plainText === '' && !noteContentEditor.querySelector('img')) { 
         noteContentEditor.classList.remove('has-content');
     } else {
         noteContentEditor.classList.add('has-content');
@@ -156,20 +145,16 @@ noteForm.addEventListener('submit', async (e) => {
     const title = noteTitleInput.value.trim();
     const content = noteContentEditor.innerHTML.trim(); 
 
-    // Validasi isi catatan juga harus memeriksa plain text content.
-    // Gunakan DOMParser untuk mendapatkan plain text yang akurat dari HTML.
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
     const plainTextContentForValidation = doc.body.textContent.trim();
 
-    if (!title) { // Judul tidak boleh kosong
+    if (!title) { 
         alert('Judul tidak boleh kosong!');
         return;
     }
     
-    // Periksa apakah plainTextContentForValidation kosong.
-    // Jika hanya berisi whitespace atau tag kosong setelah di-trim, anggap kosong.
-    if (plainTextContentForValidation === '' && !doc.body.querySelector('img')) { // Cek juga jika ada gambar
+    if (plainTextContentForValidation === '' && !doc.body.querySelector('img')) { 
         alert('Isi Catatan tidak boleh kosong!');
         return;
     }
@@ -220,15 +205,13 @@ deleteNoteBtn.addEventListener('click', async () => {
 if (logoutButton) {
     logoutButton.addEventListener('click', async () => {
         try {
-            // Hapus listener Firebase sebelum logout
             if (notesRef && notesListener) {
                 notesRef.off('value', notesListener);
-                notesListener = null; // Reset listener
+                notesListener = null; 
                 console.log('Firebase listener dimatikan.');
             }
             await auth.signOut(); 
             console.log('Pengguna berhasil logout.');
-            // Segera alihkan ke halaman login
             window.location.href = 'index.html'; 
         } catch (error) {
             console.error("Logout Error:", error);
@@ -262,7 +245,7 @@ uppercaseBtn.addEventListener('click', (event) => {
 
         if (selectedText) {
             const span = document.createElement('span');
-            span.style.textTransform = 'uppercase'; // Menerapkan CSS untuk uppercase
+            span.style.textTransform = 'uppercase'; 
             span.textContent = selectedText;
             
             range.deleteContents();
@@ -287,7 +270,7 @@ auth.onAuthStateChanged((user) => {
 
     if (isNotesPage) {
         if (user) {
-            console.log('Pengguna login di halaman notes:', user.email, 'UID:', user.uid);
+            console.log('script.js: Pengguna login di halaman notes:', user.email, 'UID:', user.uid);
             currentUserId = user.uid;
 
             if (userEmailDisplay) {
@@ -301,23 +284,19 @@ auth.onAuthStateChanged((user) => {
 
             notesRef = database.ref('notes/' + currentUserId); 
 
-            // Cek apakah listener sudah ada, jika belum, tambahkan
             if (!notesListener) {
                 notesListener = notesRef.on('value', (snapshot) => {
                     const notesData = snapshot.val();
                     renderNotes(notesData);
                 }, (error) => {
-                    console.error("Error fetching notes:", error);
-                    // Hapus alert ini agar tidak muncul saat permission denied setelah logout
-                    // alert("Gagal memuat catatan: " + error.message); 
+                    console.error("script.js: Error fetching notes:", error);
                 });
             }
 
         } else {
-            console.log('Pengguna belum login di halaman notes. Mengalihkan ke halaman login.');
+            console.log('script.js: Pengguna belum login di halaman notes. Mengalihkan ke halaman login.');
             currentUserId = null;
             
-            // Matikan listener jika ada sebelum redirect
             if (notesRef && notesListener) {
                 notesRef.off('value', notesListener);
                 notesListener = null;
@@ -328,7 +307,6 @@ auth.onAuthStateChanged((user) => {
                 if (mainHeader) mainHeader.style.display = 'none'; 
             });
 
-            // Redirect lebih cepat
             window.location.href = 'index.html'; 
         }
     } else {
