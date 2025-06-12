@@ -179,8 +179,10 @@ if (logoutButton) {
 // Listener utama untuk halaman notes.html (notes page)
 auth.onAuthStateChanged((user) => {
     // Memastikan listener ini HANYA berjalan di halaman notes.html
-    // Memeriksa window.location.pathname
-    if (window.location.pathname.endsWith('/notes.html')) {
+    const currentPath = window.location.pathname;
+    const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html'); // Tambahkan juga path absolut jika diperlukan
+
+    if (isNotesPage) {
         if (user) {
             // Pengguna sudah login
             console.log('Pengguna login di halaman notes:', user.email, 'UID:', user.uid);
@@ -191,8 +193,11 @@ auth.onAuthStateChanged((user) => {
             }
             
             // Tampilkan seluruh konten aplikasi Haru Notes setelah user dipastikan login
-            if (appWrapper) appWrapper.style.display = 'block'; 
-            if (mainHeader) mainHeader.style.display = 'flex'; 
+            // Gunakan requestAnimationFrame untuk memastikan DOM siap untuk perubahan display
+            requestAnimationFrame(() => {
+                if (appWrapper) appWrapper.style.display = 'block'; 
+                if (mainHeader) mainHeader.style.display = 'flex'; 
+            });
 
             notesRef = database.ref('notes/' + currentUserId);
 
@@ -211,18 +216,24 @@ auth.onAuthStateChanged((user) => {
             notesRef = null;
 
             // Sembunyikan seluruh konten aplikasi Haru Notes
-            if (appWrapper) appWrapper.style.display = 'none'; 
-            if (mainHeader) mainHeader.style.display = 'none'; 
+            requestAnimationFrame(() => {
+                if (appWrapper) appWrapper.style.display = 'none'; 
+                if (mainHeader) mainHeader.style.display = 'none'; 
+            });
 
             // PENTING: Redirect ke halaman login (index.html)
-            window.location.href = 'index.html'; 
+            // Tambahkan sedikit delay untuk memastikan status Firebase Auth stabil
+            setTimeout(() => {
+                window.location.href = 'index.html'; 
+            }, 100); // Delay 100ms
         }
     } else {
         // Jika script.js ini dijalankan di halaman lain (misalnya index.html)
         // Pastikan app-wrapper dan mainHeader tersembunyi secara default
-        // Ini adalah fallback, seharusnya tidak terjadi jika pemuatan script sudah benar
-        if (appWrapper) appWrapper.style.display = 'none';
-        if (mainHeader) mainHeader.style.display = 'none';
+        requestAnimationFrame(() => {
+            if (appWrapper) appWrapper.style.display = 'none';
+            if (mainHeader) mainHeader.style.display = 'none';
+        });
     }
 });
 
