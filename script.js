@@ -67,10 +67,29 @@ const renderNotes = (notesData) => {
 
             const lastEditedText = note.timestamp ? `Terakhir diedit: ${formatTimestamp(note.timestamp)}` : 'Tidak diketahui';
 
-            const previewContentElement = document.createElement('div');
-            previewContentElement.innerHTML = note.content; 
+            // Untuk mengatasi masalah "garis baru digabung":
+            // Kita akan membuat elemen div sementara untuk merender konten HTML,
+            // kemudian mengambil textContent-nya. Namun, untuk menjaga line breaks,
+            // kita akan mengganti <br> dengan \n, dan <p> dengan \n\n.
+            // Kemudian, CSS `white-space: pre-wrap;` pada `.note-card-content`
+            // akan menangani tampilan line break ini.
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = note.content; // Render HTML dari editor
+
+            // Mengganti <br> dengan newline dan <p> dengan double newline
+            // Ini akan memastikan format baris baru dipertahankan saat dikonversi ke plain text
+            let processedContent = tempDiv.innerHTML
+                .replace(/<br\s*\/?>/gi, '\n') // Ganti <br> dengan newline
+                .replace(/<p>/gi, '\n\n') // Ganti <p> awal dengan double newline
+                .replace(/<\/p>/gi, ''); // Hapus </p>
+
+            // Buat elemen div lagi untuk mengambil textContent setelah proses di atas
+            const finalContentDiv = document.createElement('div');
+            finalContentDiv.innerHTML = processedContent;
             
-            const plainTextContent = previewContentElement.textContent || previewContentElement.innerText;
+            const plainTextContent = finalContentDiv.textContent || finalContentDiv.innerText;
+
             const maxPreviewLength = 200; 
             let displayContent = plainTextContent;
             if (plainTextContent.length > maxPreviewLength) {
@@ -111,8 +130,8 @@ const closeModal = () => {
 };
 
 function updatePlaceholder() {
-    if (noteContentEditor.innerHTML.trim() === '' && !noteContentEditor.querySelector(':not(br):not(span[style="font-weight: bold;"]):not(span[style="font-style: italic;"]):not(span[style="text-transform: uppercase;"])')) {
-        // Cek jika hanya ada <br> atau span styling kosong
+    if (noteContentEditor.innerHTML.trim() === '' || noteContentEditor.innerHTML.trim() === '<br>') {
+        // Cek jika hanya ada <br> atau kosong
         noteContentEditor.classList.remove('has-content');
     } else {
         noteContentEditor.classList.add('has-content');
@@ -158,10 +177,10 @@ noteForm.addEventListener('submit', async (e) => {
     
     try {
         if (id) {
-            await database.ref('notes/' + currentUserId).child(id).update(noteData); // Gunakan `database` global
+            await database.ref('notes/' + currentUserId).child(id).update(noteData); 
             console.log("Catatan berhasil diupdate!");
         } else {
-            await database.ref('notes/' + currentUserId).push(noteData); // Gunakan `database` global
+            await database.ref('notes/' + currentUserId).push(noteData); 
             console.log("Catatan baru berhasil ditambahkan!");
         }
         closeModal();
@@ -184,7 +203,7 @@ deleteNoteBtn.addEventListener('click', async () => {
     }
 
     try {
-        await database.ref('notes/' + currentUserId).child(id).remove(); // Gunakan `database` global
+        await database.ref('notes/' + currentUserId).child(id).remove(); 
         console.log("Catatan berhasil dihapus!");
         closeModal();
     } catch (error) {
@@ -196,7 +215,7 @@ deleteNoteBtn.addEventListener('click', async () => {
 if (logoutButton) {
     logoutButton.addEventListener('click', async () => {
         try {
-            await auth.signOut(); // Gunakan `auth` global
+            await auth.signOut(); 
             console.log('Pengguna berhasil logout.');
             window.location.href = 'index.html'; 
         } catch (error) {
@@ -231,7 +250,8 @@ uppercaseBtn.addEventListener('click', (event) => {
 
         if (selectedText) {
             const span = document.createElement('span');
-            span.textContent = selectedText.toUpperCase();
+            span.style.textTransform = 'uppercase'; // Menerapkan CSS untuk uppercase
+            span.textContent = selectedText;
             
             range.deleteContents();
             range.insertNode(span);
@@ -249,7 +269,7 @@ uppercaseBtn.addEventListener('click', (event) => {
 // --- END Text Styling Functions ---
 
 
-auth.onAuthStateChanged((user) => { // Gunakan `auth` global
+auth.onAuthStateChanged((user) => { 
     const currentPath = window.location.pathname;
     const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html'); 
 
@@ -267,7 +287,7 @@ auth.onAuthStateChanged((user) => { // Gunakan `auth` global
                 if (mainHeader) mainHeader.style.display = 'flex'; 
             });
 
-            notesRef = database.ref('notes/' + currentUserId); // Gunakan `database` global
+            notesRef = database.ref('notes/' + currentUserId); 
 
             notesRef.on('value', (snapshot) => {
                 const notesData = snapshot.val();

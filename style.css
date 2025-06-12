@@ -169,7 +169,8 @@ button[type="submit"]:hover {
 
 .header-left {
     display: flex;
-    align-items: center;
+    flex-direction: column; /* Mengatur menjadi kolom */
+    align-items: flex-start; /* Rata kiri */
 }
 
 .header-brand h1 {
@@ -181,12 +182,12 @@ button[type="submit"]:hover {
 .user-email {
     font-size: 0.9em;
     color: var(--text-secondary);
-    margin-left: 10px;
+    margin-top: 2px; /* Sedikit jarak dari Haru Notes */
     font-weight: 500;
     white-space: nowrap; /* Mencegah email pecah baris */
     overflow: hidden; /* Sembunyikan bagian yang meluap */
     text-overflow: ellipsis; /* Tampilkan ... jika terlalu panjang */
-    max-width: 150px; /* Batasi lebar */
+    max-width: 180px; /* Batasi lebar agar tidak terlalu panjang di desktop */
 }
 
 .header-right {
@@ -265,7 +266,7 @@ main {
 .note-card-content {
     font-size: 0.95em;
     color: var(--text-secondary);
-    white-space: pre-wrap; /* Mempertahankan spasi dan baris baru */
+    white-space: pre-wrap; /* PENTING: Mempertahankan spasi dan baris baru */
     word-wrap: break-word; /* Memastikan teks panjang pecah baris */
     overflow: hidden; /* Menyembunyikan konten yang meluap */
     text-overflow: ellipsis; /* Menambahkan elipsis jika konten terlalu panjang */
@@ -358,20 +359,19 @@ main {
 
 /* Menyesuaikan styling untuk contenteditable div */
 .note-content-editor {
-    width: 100% !important; /* PENTING: Untuk memastikan lebar penuh */
-    min-height: 150px !important; /* PENTING: Untuk memastikan tinggi minimal */
-    padding: 12px 15px !important; /* PENTING: Untuk memastikan padding */
+    width: 100% !important;
+    min-height: 150px !important;
+    padding: 12px 15px !important;
     border: 1px solid var(--border-color) !important;
     border-radius: 8px !important;
     font-size: 1em !important;
     box-sizing: border-box !important;
     transition: border-color 0.2s ease !important;
-    resize: vertical !important; /* Izinkan diubah ukurannya secara vertikal */
-    overflow-y: auto !important; /* Aktifkan scroll jika kontennya meluap */
-    line-height: 1.6 !important; /* Keterbacaan yang lebih baik */
-    background-color: var(--card-bg) !important; /* Latar belakang sama dengan card */
-    color: var(--text-primary) !important; /* Warna teks sama dengan utama */
-    /* Menambah properti display dan visibility untuk debugging */
+    resize: vertical !important;
+    overflow-y: auto !important;
+    line-height: 1.6 !important;
+    background-color: var(--card-bg) !important;
+    color: var(--text-primary) !important;
     display: block !important;
     visibility: visible !important;
 }
@@ -385,23 +385,23 @@ main {
 /* Styling untuk placeholder */
 .note-content-editor:empty:before {
     content: attr(data-placeholder);
-    color: var(--text-secondary); /* Warna placeholder */
+    color: var(--text-secondary);
     font-style: italic;
-    pointer-events: none; /* Agar tidak mengganggu klik */
-    display: block; /* Agar placeholder terlihat */
+    pointer-events: none;
+    display: block;
 }
 
 
 /* Styling untuk tombol styling teks */
 .style-buttons {
     display: flex;
-    gap: 5px; /* Jarak antar tombol */
-    margin-top: 10px; /* Jarak antara editor dan tombol */
+    gap: 5px; 
+    margin-top: 10px; 
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 5px;
     background-color: var(--background);
-    min-width: fit-content; /* Pastikan tidak terlalu rapat */
+    min-width: fit-content; 
 }
 
 .style-btn {
@@ -414,7 +414,7 @@ main {
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     font-size: 0.9em;
-    min-width: 35px; /* Untuk memastikan lebar minimal */
+    min-width: 35px; 
     text-align: center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
@@ -442,6 +442,17 @@ main {
         gap: 10px;
     }
 
+    .header-left {
+        width: 100%; /* Pastikan header-left mengambil lebar penuh di mobile */
+        align-items: flex-start; /* Rata kiri untuk teks Haru Notes dan email */
+    }
+
+    .user-email {
+        max-width: 100%; /* Lebar penuh di mobile */
+        text-align: left; /* Rata kiri */
+        margin-left: 0; /* Hapus margin kiri bawaan */
+    }
+
     .header-right {
         width: 100%;
         justify-content: space-around;
@@ -459,16 +470,12 @@ main {
         padding: 10px 15px;
     }
 
-    .user-email {
-        max-width: 100px; /* Lebih kecil untuk mobile */
-    }
-
     .notes-container {
         grid-template-columns: 1fr; /* Satu kolom untuk mobile */
     }
 
     .note-card {
-        min-height: auto; /* Lepaskan min-height untuk mobile */
+        min-height: auto; 
     }
 
     .main-header.header-hidden {
