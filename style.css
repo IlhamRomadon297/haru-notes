@@ -270,7 +270,6 @@ main {
     overflow: hidden; /* Menyembunyikan konten yang meluap */
     text-overflow: ellipsis; /* Menambahkan elipsis jika konten terlalu panjang */
     display: -webkit-box;
-    -webkit-line-clamp: 5; /* Batasi hingga 5 baris */
     -webkit-box-orient: vertical;
     flex-grow: 1; /* Memastikan konten mengisi ruang yang tersedia */
 }

@@ -5,7 +5,7 @@ const auth = firebase.auth();
 const database = firebase.database(); 
 
 const appWrapper = document.getElementById('app-wrapper'); 
-const notesContainer = document.getElementById('notes-container'); // DEKLARASI PERTAMA DAN SATU-SATUNYA DI SINI
+const notesContainer = document.getElementById('notes-container'); 
 const addNoteBtn = document.getElementById('add-note-btn');
 const modalContainer = document.getElementById('modal-container');
 const closeModalBtn = document.querySelector('.close-modal-btn');
@@ -69,9 +69,17 @@ const renderNotes = (notesData) => {
 
             const lastEditedText = note.timestamp ? `Terakhir diedit: ${formatTimestamp(note.timestamp)}` : 'Tidak diketahui';
 
+            // START PERUBAHAN DI SINI: Parsing Markdown untuk tampilan
+            let parsedContent = note.content;
+            // Ganti **teks** menjadi <b>teks</b>
+            parsedContent = parsedContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            // Ganti *teks* menjadi <i>teks</i>
+            parsedContent = parsedContent.replace(/\*(.*?)\*/g, '<i>$1</i>');
+            // END PERUBAHAN
+
             noteCard.innerHTML = `
                 <h2 class="note-card-title">${note.title}</h2>
-                <p class="note-card-content">${note.content}</p>
+                <p class="note-card-content">${parsedContent}</p>
                 <p class="note-last-edited">${lastEditedText}</p>
             `;
             
@@ -86,7 +94,8 @@ const openModal = (note = null) => {
     if (note) {
         noteIdInput.value = note.id;
         noteTitleInput.value = note.title;
-        noteContentInput.value = note.content;
+        // Saat membuka modal untuk mengedit, tampilkan kembali Markdown aslinya
+        noteContentInput.value = note.content; 
         deleteNoteBtn.classList.remove('hidden');
     } else {
         noteIdInput.value = '';
@@ -127,7 +136,7 @@ noteForm.addEventListener('submit', async (e) => {
 
     const noteData = { 
         title, 
-        content, 
+        content, // Simpan konten asli dengan Markdown
         timestamp: firebase.database.ServerValue.TIMESTAMP
     };
     
@@ -236,8 +245,6 @@ uppercaseBtn.addEventListener('click', () => {
         textarea.selectionEnd = end;
     } else {
         // Jika tidak ada teks yang dipilih, kita tidak melakukan apa-apa untuk uppercase
-        // Anda bisa memilih untuk mengubah seluruh konten jika diinginkan, tapi untuk saat ini biarkan hanya yang terseleksi
-        // textarea.value = textarea.value.toUpperCase();
     }
     textarea.focus();
 });
