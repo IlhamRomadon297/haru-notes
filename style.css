@@ -269,7 +269,7 @@ main {
     white-space: pre-wrap; /* PENTING: Mempertahankan spasi dan baris baru */
     word-wrap: break-word; /* Memastikan teks panjang pecah baris */
     overflow: hidden; /* Menyembunyikan konten yang meluap */
-    text-overflow: ellipsis; /* Menambahkan elipsis jika konten terlalu panjang */
+    /* text-overflow: ellipsis; */ /* Hapus ini jika ingin ellipsis 3 titik dikontrol oleh -webkit-line-clamp */
     display: -webkit-box;
     -webkit-line-clamp: 5; /* Batasi hingga 5 baris */
     -webkit-box-orient: vertical;

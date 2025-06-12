@@ -67,40 +67,25 @@ const renderNotes = (notesData) => {
 
             const lastEditedText = note.timestamp ? `Terakhir diedit: ${formatTimestamp(note.timestamp)}` : 'Tidak diketahui';
 
-            // Untuk mengatasi masalah "garis baru digabung":
-            // Kita akan membuat elemen div sementara untuk merender konten HTML,
-            // kemudian mengambil textContent-nya. Namun, untuk menjaga line breaks,
-            // kita akan mengganti <br> dengan \n, dan <p> dengan \n\n.
-            // Kemudian, CSS `white-space: pre-wrap;` pada `.note-card-content`
-            // akan menangani tampilan line break ini.
+            // --- PERUBAHAN UTAMA DI SINI ---
+            // Langsung masukkan HTML content ke dalam div, lalu biarkan CSS yang membatasi
+            const noteContentElement = document.createElement('div');
+            noteContentElement.classList.add('note-card-content');
+            noteContentElement.innerHTML = note.content; // Render HTML asli dari editor
 
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = note.content; // Render HTML dari editor
-
-            // Mengganti <br> dengan newline dan <p> dengan double newline
-            // Ini akan memastikan format baris baru dipertahankan saat dikonversi ke plain text
-            let processedContent = tempDiv.innerHTML
-                .replace(/<br\s*\/?>/gi, '\n') // Ganti <br> dengan newline
-                .replace(/<p>/gi, '\n\n') // Ganti <p> awal dengan double newline
-                .replace(/<\/p>/gi, ''); // Hapus </p>
-
-            // Buat elemen div lagi untuk mengambil textContent setelah proses di atas
-            const finalContentDiv = document.createElement('div');
-            finalContentDiv.innerHTML = processedContent;
-            
-            const plainTextContent = finalContentDiv.textContent || finalContentDiv.innerText;
-
-            const maxPreviewLength = 200; 
-            let displayContent = plainTextContent;
-            if (plainTextContent.length > maxPreviewLength) {
-                displayContent = plainTextContent.substring(0, maxPreviewLength) + '...';
-            }
+            // Karena kita merender HTML, pemotongan konten harus dilakukan secara berbeda.
+            // Kita akan menggunakan -webkit-line-clamp di CSS untuk pemotongan berbasis baris.
+            // Tidak perlu lagi memotong string di JS.
+            // Namun, untuk memastikan HTML yang terlalu panjang tidak membuat card terlalu tinggi
+            // dan tetap menampilkan ellipsis, kita perlu memastikan CSS bekerja dengan baik.
 
             noteCard.innerHTML = `
                 <h2 class="note-card-title">${note.title}</h2>
-                <p class="note-card-content">${displayContent}</p>
                 <p class="note-last-edited">${lastEditedText}</p>
             `;
+            // Masukkan elemen konten setelah judul
+            noteCard.insertBefore(noteContentElement, noteCard.querySelector('.note-last-edited'));
+            // --- AKHIR PERUBAHAN UTAMA ---
             
             noteCard.addEventListener('click', () => openModal(note));
             notesContainer.appendChild(noteCard);
@@ -130,8 +115,14 @@ const closeModal = () => {
 };
 
 function updatePlaceholder() {
-    if (noteContentEditor.innerHTML.trim() === '' || noteContentEditor.innerHTML.trim() === '<br>') {
-        // Cek jika hanya ada <br> atau kosong
+    // Memastikan placeholder berfungsi jika hanya ada tag HTML kosong atau spasi
+    const contentCheckDiv = document.createElement('div');
+    contentCheckDiv.innerHTML = noteContentEditor.innerHTML;
+    // Mengambil plain text dan menghapus spasi
+    const plainText = contentCheckDiv.textContent.trim(); 
+
+    if (plainText === '' && noteContentEditor.innerHTML.indexOf('<img') === -1) { 
+        // Cek jika plain text kosong dan tidak ada gambar (jika ada gambar yang mungkin disisipkan)
         noteContentEditor.classList.remove('has-content');
     } else {
         noteContentEditor.classList.add('has-content');
@@ -163,8 +154,9 @@ noteForm.addEventListener('submit', async (e) => {
     const title = noteTitleInput.value.trim();
     const content = noteContentEditor.innerHTML.trim(); 
 
-    const plainTextContent = noteContentEditor.textContent.trim();
-    if (!title || !plainTextContent) { 
+    // Validasi isi catatan juga harus memeriksa plain text content
+    const plainTextContentForValidation = noteContentEditor.textContent.trim();
+    if (!title || !plainTextContentForValidation) { 
         alert('Judul dan Isi Catatan tidak boleh kosong!');
         return;
     }
