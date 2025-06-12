@@ -1,8 +1,6 @@
 // script.js
 // Pastikan firebase-config.js sudah dimuat sebelum script.js
-
-const auth = firebase.auth();
-const database = firebase.database(); 
+// Tidak perlu mendeklarasikan `auth` dan `database` lagi di sini, cukup gunakan yang sudah ada dari firebase-config.js
 
 const appWrapper = document.getElementById('app-wrapper'); 
 const notesContainer = document.getElementById('notes-container'); 
@@ -12,7 +10,7 @@ const closeModalBtn = document.querySelector('.close-modal-btn');
 const noteForm = document.getElementById('note-form');
 const noteIdInput = document.getElementById('note-id');
 const noteTitleInput = document.getElementById('note-title');
-const noteContentEditor = document.getElementById('note-content-editor'); // <--- PASTIKAN INI BENAR
+const noteContentEditor = document.getElementById('note-content-editor'); 
 const deleteNoteBtn = document.getElementById('delete-note-btn');
 const noNotesMessage = document.getElementById('no-notes-message');
 const logoutButton = document.getElementById('logout-button');
@@ -51,7 +49,7 @@ const renderNotes = (notesData) => {
             notesArray.push({
                 id: key,
                 title: notesData[key].title,
-                content: notesData[key].content, // Konten sekarang bisa berisi HTML dari editor
+                content: notesData[key].content, 
                 timestamp: notesData[key].timestamp
             });
         });
@@ -69,19 +67,11 @@ const renderNotes = (notesData) => {
 
             const lastEditedText = note.timestamp ? `Terakhir diedit: ${formatTimestamp(note.timestamp)}` : 'Tidak diketahui';
 
-            // Menampilkan konten HTML dari editor
-            // Gunakan innerHTML untuk merender HTML dari note.content
-            // Untuk membatasi tampilan dan ellipsis, kita akan menggunakan textContent untuk preview dan CSS
-            // Ini akan menghilangkan formatting di preview card, tapi memastikan tidak memanjang.
-            // Jika ingin visual formatting di preview card, akan lebih kompleks (sanitasi HTML)
             const previewContentElement = document.createElement('div');
-            previewContentElement.innerHTML = note.content; // Render HTML di elemen sementara
+            previewContentElement.innerHTML = note.content; 
             
-            // Batasi tampilan konten di card agar tidak memanjang
-            // Kita akan menggunakan textContent untuk membuang HTML saat memotong teks,
-            // lalu apply CSS ellipsis. Ini akan membuat tampilan preview tetap rapi.
             const plainTextContent = previewContentElement.textContent || previewContentElement.innerText;
-            const maxPreviewLength = 200; // Contoh: potong setelah 200 karakter
+            const maxPreviewLength = 200; 
             let displayContent = plainTextContent;
             if (plainTextContent.length > maxPreviewLength) {
                 displayContent = plainTextContent.substring(0, maxPreviewLength) + '...';
@@ -101,20 +91,18 @@ const renderNotes = (notesData) => {
 
 const openModal = (note = null) => {
     noteForm.reset();
-    // Mengatur HTML dari editor, bukan value
-    noteContentEditor.innerHTML = ''; // Kosongkan editor saat membuka modal baru
+    noteContentEditor.innerHTML = ''; 
     if (note) {
         noteIdInput.value = note.id;
         noteTitleInput.value = note.title;
-        noteContentEditor.innerHTML = note.content; // <--- Mengatur HTML konten
+        noteContentEditor.innerHTML = note.content; 
         deleteNoteBtn.classList.remove('hidden');
     } else {
         noteIdInput.value = '';
         deleteNoteBtn.classList.add('hidden'); 
     }
-    // Panggil updatePlaceholder setiap kali modal dibuka
     updatePlaceholder();
-    noteContentEditor.focus(); // Pastikan editor langsung fokus saat modal terbuka
+    noteContentEditor.focus(); 
     modalContainer.classList.remove('hidden');
 };
 
@@ -122,16 +110,16 @@ const closeModal = () => {
     modalContainer.classList.add('hidden');
 };
 
-// Fungsi untuk mengelola placeholder
 function updatePlaceholder() {
-    if (noteContentEditor.innerHTML.trim() === '') {
+    if (noteContentEditor.innerHTML.trim() === '' && !noteContentEditor.querySelector(':not(br):not(span[style="font-weight: bold;"]):not(span[style="font-style: italic;"]):not(span[style="text-transform: uppercase;"])')) {
+        // Cek jika hanya ada <br> atau span styling kosong
         noteContentEditor.classList.remove('has-content');
     } else {
         noteContentEditor.classList.add('has-content');
     }
 }
 
-// Panggil updatePlaceholder setiap kali konten editor berubah
+
 noteContentEditor.addEventListener('input', updatePlaceholder);
 
 
@@ -154,27 +142,26 @@ noteForm.addEventListener('submit', async (e) => {
 
     const id = noteIdInput.value;
     const title = noteTitleInput.value.trim();
-    const content = noteContentEditor.innerHTML.trim(); // <--- Mengambil HTML dari editor
+    const content = noteContentEditor.innerHTML.trim(); 
 
-    // Periksa apakah konten editor kosong (setelah trim dan tanpa tag HTML)
     const plainTextContent = noteContentEditor.textContent.trim();
-    if (!title || !plainTextContent) { // Periksa plainTextContent untuk validasi kosong
+    if (!title || !plainTextContent) { 
         alert('Judul dan Isi Catatan tidak boleh kosong!');
         return;
     }
 
     const noteData = { 
         title, 
-        content, // Simpan konten sebagai HTML
+        content, 
         timestamp: firebase.database.ServerValue.TIMESTAMP
     };
     
     try {
         if (id) {
-            await notesRef.child(id).update(noteData);
+            await database.ref('notes/' + currentUserId).child(id).update(noteData); // Gunakan `database` global
             console.log("Catatan berhasil diupdate!");
         } else {
-            await notesRef.push(noteData);
+            await database.ref('notes/' + currentUserId).push(noteData); // Gunakan `database` global
             console.log("Catatan baru berhasil ditambahkan!");
         }
         closeModal();
@@ -197,7 +184,7 @@ deleteNoteBtn.addEventListener('click', async () => {
     }
 
     try {
-        await notesRef.child(id).remove();
+        await database.ref('notes/' + currentUserId).child(id).remove(); // Gunakan `database` global
         console.log("Catatan berhasil dihapus!");
         closeModal();
     } catch (error) {
@@ -209,7 +196,7 @@ deleteNoteBtn.addEventListener('click', async () => {
 if (logoutButton) {
     logoutButton.addEventListener('click', async () => {
         try {
-            await auth.signOut();
+            await auth.signOut(); // Gunakan `auth` global
             console.log('Pengguna berhasil logout.');
             window.location.href = 'index.html'; 
         } catch (error) {
@@ -222,50 +209,47 @@ if (logoutButton) {
 // --- START Text Styling Functions (Menggunakan execCommand) ---
 
 boldBtn.addEventListener('click', (event) => {
-    event.preventDefault(); // Mencegah tombol submit form jika di dalam form
+    event.preventDefault(); 
     document.execCommand('bold', false, null);
-    noteContentEditor.focus(); // Pastikan fokus kembali ke editor
+    noteContentEditor.focus(); 
     updatePlaceholder();
 });
 
 italicBtn.addEventListener('click', (event) => {
-    event.preventDefault(); // Mencegah tombol submit form jika di dalam form
+    event.preventDefault(); 
     document.execCommand('italic', false, null);
-    noteContentEditor.focus(); // Pastikan fokus kembali ke editor
+    noteContentEditor.focus(); 
     updatePlaceholder();
 });
 
 uppercaseBtn.addEventListener('click', (event) => {
-    event.preventDefault(); // Mencegah tombol submit form jika di dalam form
+    event.preventDefault(); 
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const selectedText = range.toString();
 
         if (selectedText) {
-            // Mengubah teks yang dipilih menjadi uppercase
-            // Karena execCommand tidak punya 'uppercase', kita manipulasi DOM langsung
             const span = document.createElement('span');
             span.textContent = selectedText.toUpperCase();
             
             range.deleteContents();
             range.insertNode(span);
 
-            // Reselect the new text to make it easy to apply other styles
             const newRange = document.createRange();
             newRange.selectNode(span);
             selection.removeAllRanges();
             selection.addRange(newRange);
         }
     }
-    noteContentEditor.focus(); // Pastikan fokus kembali ke editor
+    noteContentEditor.focus(); 
     updatePlaceholder();
 });
 
 // --- END Text Styling Functions ---
 
 
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged((user) => { // Gunakan `auth` global
     const currentPath = window.location.pathname;
     const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html'); 
 
@@ -283,7 +267,7 @@ auth.onAuthStateChanged((user) => {
                 if (mainHeader) mainHeader.style.display = 'flex'; 
             });
 
-            notesRef = database.ref('notes/' + currentUserId);
+            notesRef = database.ref('notes/' + currentUserId); // Gunakan `database` global
 
             notesRef.on('value', (snapshot) => {
                 const notesData = snapshot.val();
