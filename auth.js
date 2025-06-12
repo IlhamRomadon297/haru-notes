@@ -27,6 +27,7 @@ loginForm.addEventListener('submit', async (e) => {
         await auth.signInWithEmailAndPassword(email, password);
         showMessage('Login berhasil! Mengalihkan...', 'success');
         // PENTING: Redirect ke notes.html
+        // Pastikan Anda menggunakan nama file 'notes.html'
         window.location.href = 'notes.html'; 
     } catch (error) {
         let errorMessage;
@@ -80,11 +81,12 @@ registerButton.addEventListener('click', async () => {
 
 // Listener utama untuk halaman index.html (login page)
 auth.onAuthStateChanged((user) => {
-    // Memastikan listener ini HANYA berjalan di halaman index.html
+    // Gunakan regex untuk deteksi path yang lebih fleksibel, 
+    // termasuk root project di GitHub Pages (misal: /haru-notes/ atau /haru-notes/index.html)
     const currentPath = window.location.pathname;
-    const isRoot = currentPath === '/' || currentPath.endsWith('/index.html');
+    const isLoginPage = currentPath.endsWith('/') || currentPath.endsWith('/index.html') || currentPath.endsWith('/haru-notes/'); // Sesuaikan '/haru-notes/' dengan nama repo Anda jika berbeda
 
-    if (isRoot) {
+    if (isLoginPage) {
         if (user) {
             // Pengguna sudah login, langsung alihkan ke notes.html
             console.log('Pengguna sudah login di halaman login, mengalihkan ke notes:', user.email);
