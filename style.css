@@ -471,3 +471,39 @@ main {
         transform: translateY(-100%);
     }
 }
+/* style.css */
+/* ... (kode CSS lainnya di atas) ... */
+
+/* Menyesuaikan styling untuk contenteditable div */
+.note-content-editor {
+    width: 100%;
+    min-height: 150px; /* PENTING: Minimal tinggi agar terlihat */
+    padding: 12px 15px; /* PENTING: Padding agar ada ruang */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    resize: vertical; /* Izinkan diubah ukurannya secara vertikal */
+    overflow-y: auto; /* Aktifkan scroll jika kontennya meluap */
+    line-height: 1.6; /* Keterbacaan yang lebih baik */
+    background-color: var(--card-bg); /* Latar belakang sama dengan card */
+    color: var(--text-primary); /* Warna teks sama dengan utama */
+}
+
+.note-content-editor:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
+}
+
+/* Styling untuk placeholder */
+.note-content-editor:empty:before {
+    content: attr(data-placeholder);
+    color: var(--text-secondary); /* Warna placeholder */
+    font-style: italic;
+    pointer-events: none; /* Agar tidak mengganggu klik */
+    display: block; /* Agar placeholder terlihat */
+}
+
+/* ... (kode CSS lainnya di bawah) ... */
