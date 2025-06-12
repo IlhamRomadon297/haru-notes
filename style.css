@@ -1,503 +1,396 @@
-/* Import Google Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
-
-/* Variabel Warna */
 :root {
-  --background: #fdfaf6;
-  --text-primary: #3a3a3a;
-  --text-secondary: #8c8c8c;
-  --primary-accent: #f2a2a4; /* Merah muda */
-  --secondary-accent: #a4c3b2; /* Hijau mint */
-  --border-color: #e0e0e0;
-  --danger-color: #d9534f;
-  --card-bg: #ffffff;
-
-  /* Tambahan untuk Login Page */
-  --dark-bg: #1A1A2E;         /* Biru Tua pekat */
-  --light-bg: #2C2C4A;        /* Ungu kebiruan gelap */
-  --text-color: #E0E0E0;      /* Abu-abu terang */
-  --shadow-color: rgba(0, 0, 0, 0.4);
-  --login-button-bg: #1E90FF; /* Biru Dodger */
-}
-
-/* Reset dan Aturan Dasar */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    --primary-color: #ffb6c1; /* Light Pink */
+    --secondary-color: #ffecd2; /* Light Peach */
+    --accent-color: #a7d9b4; /* Light Green */
+    --text-primary: #333;
+    --text-secondary: #555;
+    --background: #f8f8f8;
+    --card-bg: #fff;
+    --border-color: #e0e0e0;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --button-primary-bg: #ffb6c1;
+    --button-primary-hover-bg: #ff9fb4;
+    --button-danger-bg: #ff6b6b;
+    --button-danger-hover-bg: #ff4c4c;
 }
 
 body {
     font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
     background-color: var(--background);
     color: var(--text-primary);
     line-height: 1.6;
-    min-height: 100vh;
-    display: flex; /* Untuk memusatkan konten login/notes */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column; /* Memungkinkan header dan main berada di atas-bawah */
 }
 
-/* Header (untuk notes.html) */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Login Page Styling */
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--primary-color);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.login-container {
+    background-color: var(--card-bg);
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px var(--shadow-light);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.login-container h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 2.2em;
+    font-weight: 700;
+}
+
+.login-container h2 {
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
+}
+
+.message {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 500;
+    display: none; /* Hidden by default */
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* General Button Styling */
+button {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 2px 5px var(--shadow-light);
+    margin-top: 10px;
+}
+
+button[type="submit"] {
+    background-color: var(--button-primary-bg);
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--button-primary-hover-bg);
+    transform: translateY(-1px);
+}
+
+#register-button {
+    background-color: #f0f0f0;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+#register-button:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-1px);
+}
+
+/* Header Styling */
 .main-header {
+    background-color: var(--card-bg);
+    padding: 15px 20px;
+    box-shadow: 0 2px 8px var(--shadow-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 5%; /* Padding default untuk desktop */
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    width: 100%;
-    position: fixed; /* Tetap fixed untuk desktop dan mobile */
+    position: sticky;
     top: 0;
-    left: 0;
-    z-index: 999;
-    flex-wrap: nowrap; /* Mencegah wrap pada item utama header */
-    transition: transform 0.3s ease-in-out; /* Transisi untuk menyembunyikan/menampilkan */
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 
-/* Class untuk menyembunyikan header */
-.header-hidden {
-    transform: translateY(-100%); /* Geser header ke atas, keluar dari viewport */
+.main-header.header-hidden {
+    transform: translateY(-100%);
 }
 
-.main-header .header-left {
-    display: flex; /* Gunakan flexbox untuk header-left */
-    align-items: center; /* Sejajalkan secara vertikal */
-    margin-right: auto; /* Dorong ke kiri */
-}
-
-.main-header .header-brand { /* Pembungkus untuk judul dan email */
+.header-left {
     display: flex;
-    flex-direction: column; /* Ini yang membuat judul dan email bertumpuk */
-    align-items: flex-start; /* Sejajalkan ke kiri */
-    margin-right: 15px; /* Sedikit jarak dari tombol di sebelah kanan */
+    align-items: center;
 }
 
-.main-header h1 {
-    color: var(--text-primary);
-    font-size: 1.8rem;
-    margin-bottom: 0px; /* Hapus margin bawah default */
+.header-brand h1 {
+    margin: 0;
+    font-size: 1.8em;
+    color: var(--primary-color);
 }
 
-.main-header .user-email {
+.user-email {
+    font-size: 0.9em;
     color: var(--text-secondary);
-    font-size: 0.9rem; /* Ukuran font email lebih kecil */
+    margin-left: 10px;
     font-weight: 500;
     white-space: nowrap; /* Mencegah email pecah baris */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px; /* Batasi lebar email agar tidak terlalu panjang */
-    margin-top: 2px; /* Sedikit jarak dari judul */
-    display: block; /* Pastikan selalu block untuk tampilan kolom */
+    overflow: hidden; /* Sembunyikan bagian yang meluap */
+    text-overflow: ellipsis; /* Tampilkan ... jika terlalu panjang */
+    max-width: 150px; /* Batasi lebar */
 }
 
-.main-header .header-right {
+.header-right {
     display: flex;
-    align-items: center;
     gap: 10px;
-    margin-left: auto; /* Dorong ke kanan */
 }
 
-/* Tombol Umum */
 .btn {
-    padding: 0.7rem 1.5rem;
+    padding: 10px 18px;
     border: none;
     border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.95em;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-    white-space: nowrap; /* Mencegah tombol pecah baris */
-    display: flex; /* Agar ikon dan teks bisa diatur */
-    align-items: center;
-    justify-content: center;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
+    transition: background-color 0.2s ease;
+    white-space: nowrap; /* Agar teks tidak pecah baris */
 }
 
 .btn-primary {
-    background-color: var(--primary-accent);
+    background-color: var(--button-primary-bg);
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #e88a8c;
+    background-color: var(--button-primary-hover-bg);
 }
 
 .btn-danger {
-    background-color: var(--danger-color);
+    background-color: var(--button-danger-bg);
     color: white;
 }
 
-/* Teks tombol (default visible) dan Ikon (default hidden) */
-.mobile-icon {
-    display: none; /* Sembunyikan ikon di desktop secara default */
-}
-.desktop-text {
-    display: inline-block; /* Tampilkan teks di desktop secara default */
+.btn-danger:hover {
+    background-color: var(--button-danger-hover-bg);
 }
 
-/* Kontainer Catatan */
-#app-wrapper {
-    width: 100%; /* Pastikan wrapper mengisi lebar */
-    max-width: 100%;
-    /* Display akan diatur oleh script.js, dimulai sebagai hidden */
-}
-
+/* Notes Container Styling */
 main {
-    padding: 2rem 5%;
-    padding-top: 100px; /* Beri padding awal agar tidak tertutup header fixed (untuk desktop). Sesuaikan jika header lebih tinggi */
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    flex-grow: 1; /* Agar main mengisi sisa ruang vertikal */
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
 }
 
 .notes-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: 20px;
 }
 
-/* Kartu Catatan */
 .note-card {
     background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    padding: 20px;
     border-radius: 12px;
-    padding: 1.5rem;
+    box-shadow: 0 2px 8px var(--shadow-light);
     cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    display: flex; /* Menggunakan flexbox untuk tata letak di dalam card */
-    flex-direction: column; /* Konten bertumpuk */
-    justify-content: space-between; /* Untuk mendorong waktu diedit ke bawah */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Untuk mendorong last-edited ke bawah */
+    min-height: 150px; /* Minimal tinggi kartu */
 }
 
 .note-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .note-card-title {
-    font-size: 1.25rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-    white-space: nowrap; /* Mencegah judul melipat */
-    overflow: hidden; /* Menyembunyikan jika terlalu panjang */
-    text-overflow: ellipsis; /* Menambahkan ... jika judul terpotong */
+    font-size: 1.2em;
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+    word-wrap: break-word; /* Memastikan teks panjang pecah baris */
 }
 
 .note-card-content {
-    font-size: 0.95rem;
+    font-size: 0.95em;
     color: var(--text-secondary);
-    overflow: hidden; /* Pastikan teks yang berlebihan tidak keluar dari kartu */
-    max-height: 4.5em; /* Contoh: 3 baris * 1.5em line-height. sesuaikan. */
-    line-height: 1.5em; /* Penting untuk max-height berdasarkan baris */
-    text-overflow: ellipsis; /* Menambahkan ellipsis jika teks terpotong */
-    flex-grow: 1; /* Biarkan konten mengisi ruang yang tersedia */
-    margin-bottom: 1rem; /* Jarak antara konten dan waktu diedit */
+    white-space: pre-wrap; /* Mempertahankan spasi dan baris baru */
+    word-wrap: break-word; /* Memastikan teks panjang pecah baris */
+    overflow: hidden; /* Menyembunyikan konten yang meluap */
+    text-overflow: ellipsis; /* Menambahkan elipsis jika konten terlalu panjang */
+    display: -webkit-box;
+    -webkit-line-clamp: 5; /* Batasi hingga 5 baris */
+    -webkit-box-orient: vertical;
+    flex-grow: 1; /* Memastikan konten mengisi ruang yang tersedia */
 }
 
-/* Styling untuk teks "Terakhir diedit" */
 .note-last-edited {
-    font-size: 0.8em; /* Ukuran font lebih kecil */
+    font-size: 0.8em;
     color: var(--text-secondary);
-    text-align: right; /* Letakkan di kanan bawah */
-    margin-top: auto; /* Dorong ke bagian bawah card */
-    opacity: 0.8; /* Sedikit transparan agar tidak terlalu menonjol */
+    margin-top: 15px;
+    text-align: right;
+    font-style: italic;
 }
 
 #no-notes-message {
     text-align: center;
     color: var(--text-secondary);
-    font-size: 1.2rem;
-    margin-top: 3rem;
+    font-size: 1.1em;
+    margin-top: 50px;
+    font-weight: 500;
 }
 
-/* Modal */
+#no-notes-message.hidden {
+    display: none;
+}
+
+/* Modal Styling */
 .modal-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+    z-index: 2000;
 }
 
-.modal-container:not(.hidden) {
-    opacity: 1;
-    pointer-events: auto;
+.modal-container.hidden {
+    display: none;
 }
 
 .modal-content {
     background-color: var(--card-bg);
-    padding: 2.5rem;
+    padding: 30px;
     border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     width: 90%;
     max-width: 600px;
     position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
-}
-
-.modal-container:not(.hidden) .modal-content {
-    transform: translateY(0);
+    box-sizing: border-box;
+    max-height: 90vh; /* Agar bisa di-scroll jika kontennya banyak */
+    overflow-y: auto; /* Aktifkan scroll jika kontennya meluap */
 }
 
 .close-modal-btn {
     position: absolute;
-    top: 1rem;
-    right: 1.5rem;
+    top: 15px;
+    right: 15px;
     background: none;
     border: none;
-    font-size: 2rem;
+    font-size: 1.8em;
     color: var(--text-secondary);
     cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    width: auto; /* Override default button width */
+    box-shadow: none; /* Remove button shadow */
 }
 
-/* Form dalam Modal */
-#note-form .form-group {
-    margin-bottom: 1.5rem;
+.close-modal-btn:hover {
+    color: var(--primary-color);
 }
 
-#note-form label {
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 8px;
     font-weight: 500;
+    color: var(--text-secondary);
 }
 
-#note-form input[type="text"],
-#note-form textarea {
+.form-group input[type="text"],
+.form-group textarea {
     width: 100%;
-    padding: 0.8rem;
+    padding: 12px 15px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
+    border-radius: 8px; /* Disesuaikan agar sama dengan tombol styling */
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    resize: vertical; /* Izinkan textarea diubah ukurannya secara vertikal */
+    min-height: 100px; /* Minimal tinggi textarea */
 }
 
-#note-form textarea {
-    resize: vertical;
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
 }
 
 .form-actions {
     display: flex;
+    gap: 10px;
     justify-content: flex-end;
-    gap: 1rem;
+    margin-top: 20px;
 }
 
-/* Utilitas */
-.hidden {
-    display: none !important;
+.form-actions .btn {
+    width: auto; /* Biarkan tombol menyesuaikan konten */
+    padding: 10px 20px;
 }
 
-/* --- Styling Khusus untuk Halaman Login (index.html) --- */
-.login-body {
-    background-color: var(--dark-bg);
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
+#delete-note-btn.hidden {
+    display: none;
 }
-
-.login-container {
-    max-width: 450px;
-    padding: 30px;
-    background-color: var(--light-bg);
-    border-radius: 10px;
-    box-shadow: 0 5px 15px var(--shadow-color);
-    text-align: center;
-    border: 1px solid var(--border-color);
-}
-
-.login-container h1 {
-    font-size: 2.2em;
-    margin-bottom: 15px;
-    color: var(--primary-accent);
-    text-shadow: none;
-}
-
-.login-container h2 {
-    font-size: 1.5em;
-    margin-bottom: 25px;
-    color: var(--text-color);
-    text-shadow: none;
-}
-
-.input-group {
-    margin-bottom: 18px;
-    text-align: left;
-}
-
-.input-group input[type="email"],
-.input-group input[type="password"] {
-    width: calc(100% - 24px);
-    padding: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: #22223B;
-    color: var(--text-color);
-    font-size: 1em;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.input-group input:focus {
-    border-color: var(--login-button-bg);
-    outline: none;
-    box-shadow: 0 0 8px rgba(30, 144, 255, 0.5);
-}
-
-.login-container button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 15px;
-    font-size: 1.1em;
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    background-color: var(--login-button-bg);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    box-shadow: 0 3px 10px var(--shadow-color);
-    cursor: pointer;
-}
-
-.login-container button:hover {
-    background-color: #1A70DB;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px var(--shadow-color);
-}
-
-.login-container button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px var(--shadow-color);
-}
-
-#register-button {
-    background-color: #6C757D; /* Warna abu-abu untuk tombol daftar */
-}
-
-#register-button:hover {
-    background-color: #5A6268;
-}
-
-.message {
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    border-radius: 6px;
-    font-size: 0.95em;
-    font-weight: bold;
-    text-align: center;
-    color: white;
-}
-
-.message.success {
-    background-color: #28a745; /* Hijau */
-    color: white;
-}
-
-.message.error {
-    background-color: #dc3545; /* Merah */
-    color: white;
-}
-
-/* Responsif untuk Mobile (max-width: 600px) */
-@media (max-width: 600px) {
-    /* Main header di Mobile: Lebih ramping, tetap satu baris utama */
-    .main-header {
-        padding: 0.5rem 3%; /* Padding sangat kecil */
-        flex-direction: row; /* Pastikan main-header tetap row */
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: nowrap; /* Kembali ke no-wrap, header tetap satu baris */
-        height: auto; /* Biarkan tinggi menyesuaikan konten */
-    }
-
-    .main-header .header-left {
-        align-items: flex-start; 
-        margin-right: auto;
-    }
-
-    .main-header .header-brand {
-        flex-direction: column; /* Tetap kolom untuk judul dan email */
-        align-items: flex-start; /* Sejajalkan ke kiri */
-        margin-right: 8px; /* Kurangi jarak di mobile */
-    }
-
-    .main-header h1 {
-        font-size: 1.2rem; /* Ukuran font judul lebih kecil */
-        margin-bottom: 0px; 
-        flex-shrink: 1; 
-        min-width: 80px; 
-    }
-
-    .main-header .user-email {
-        font-size: 0.75rem; /* Ukuran font email lebih kecil di mobile */
-        max-width: 100%; 
-        text-align: left;
-        margin-top: 0px; /* Hapus margin top di mobile */
-    }
-
-    .main-header .header-right {
-        gap: 8px; /* Kurangi jarak antar tombol ikon */
-        margin-left: 0; 
-        flex-shrink: 0; 
-    }
-
-    /* Sembunyikan teks tombol dan tampilkan ikon di mobile */
-    .desktop-text {
-        display: none; 
-    }
-    .mobile-icon {
-        display: block; 
-        font-size: 1.2rem; /* Ukuran ikon */
-    }
-
-    .main-header .btn {
-        padding: 0.6rem 0.8rem; /* Padding tombol ikon */
-        font-size: 1.2rem; /* Atur ukuran font ikon */
-        width: auto;
-        min-width: 40px; /* Lebar minimum untuk tombol ikon */
-        height: 40px; /* Tinggi untuk tombol ikon */
-        border-radius: 50%; /* Membuat tombol ikon bulat */
-    }
-    
-    /* Penyesuaian padding-top pada main untuk menampung header mobile yang lebih kecil */
-    main {
-        padding-top: 80px; /* Sesuaikan dengan tinggi header mobile yang baru + sedikit ruang */
-    }
-    
-    .modal-content {
-        padding: 1.5rem;
-    }
-
-    .form-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .form-actions .btn {
-        width: 100%;
-    }
-}
-/* style.css */
-/* ... kode CSS lainnya ... */
 
 /* Styling untuk tombol styling teks */
 .style-buttons {
@@ -536,7 +429,48 @@ main {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* Penyesuaian untuk textarea agar lebih selaras dengan tombol */
-#note-form textarea {
-    border-radius: 8px; /* Sesuaikan dengan tombol */
+/* Media Queries untuk responsif */
+@media (max-width: 600px) {
+    .login-container, .modal-content {
+        padding: 25px 20px;
+    }
+
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .btn .desktop-text {
+        display: none;
+    }
+
+    .btn .mobile-icon {
+        display: inline;
+    }
+
+    .btn {
+        padding: 10px 15px;
+    }
+
+    .user-email {
+        max-width: 100px; /* Lebih kecil untuk mobile */
+    }
+
+    .notes-container {
+        grid-template-columns: 1fr; /* Satu kolom untuk mobile */
+    }
+
+    .note-card {
+        min-height: auto; /* Lepaskan min-height untuk mobile */
+    }
+
+    .main-header.header-hidden {
+        transform: translateY(-100%);
+    }
 }

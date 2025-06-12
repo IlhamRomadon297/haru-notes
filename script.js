@@ -5,40 +5,25 @@ const auth = firebase.auth();
 const database = firebase.database(); 
 
 const appWrapper = document.getElementById('app-wrapper'); 
-const notesContainer = document.getElementById('notes-container');
+const notesContainer = document.getElementById('notes-container'); // DEKLARASI PERTAMA DAN SATU-SATUNYA DI SINI
 const addNoteBtn = document.getElementById('add-note-btn');
 const modalContainer = document.getElementById('modal-container');
 const closeModalBtn = document.querySelector('.close-modal-btn');
 const noteForm = document.getElementById('note-form');
 const noteIdInput = document.getElementById('note-id');
 const noteTitleInput = document.getElementById('note-title');
-const noteContentInput = document.getElementById('note-content');
-// script.js
-// ... kode lainnya ...
-
-    // --- PEMILIHAN ELEMEN DOM ---
-    const notesContainer = document.getElementById('notes-container');
-    const addNoteBtn = document.getElementById('add-note-btn');
-    const modalContainer = document.getElementById('modal-container');
-    const closeModalBtn = document.querySelector('.close-modal-btn');
-    const noteForm = document.getElementById('note-form');
-    const noteIdInput = document.getElementById('note-id');
-    const noteTitleInput = document.getElementById('note-title');
-    const noteContentInput = document.getElementById('note-content'); // Ini sudah ada
-    const deleteNoteBtn = document.getElementById('delete-note-btn');
-    const noNotesMessage = document.getElementById('no-notes-message');
-    // START New DOM Elements for Styling
-    const boldBtn = document.getElementById('bold-btn');
-    const italicBtn = document.getElementById('italic-btn');
-    const uppercaseBtn = document.getElementById('uppercase-btn');
-    // END New DOM Elements for Styling
-
-// ... kode lainnya ...
+const noteContentInput = document.getElementById('note-content'); 
 const deleteNoteBtn = document.getElementById('delete-note-btn');
 const noNotesMessage = document.getElementById('no-notes-message');
 const logoutButton = document.getElementById('logout-button');
 const userEmailDisplay = document.getElementById('user-email-display'); 
 const mainHeader = document.querySelector('.main-header'); 
+
+// New DOM Elements for Styling
+const boldBtn = document.getElementById('bold-btn');
+const italicBtn = document.getElementById('italic-btn');
+const uppercaseBtn = document.getElementById('uppercase-btn');
+
 
 let currentUserId = null; 
 let notesRef = null; 
@@ -188,7 +173,6 @@ if (logoutButton) {
         try {
             await auth.signOut();
             console.log('Pengguna berhasil logout.');
-            // PENTING: Setelah logout, alihkan ke halaman login (index.html)
             window.location.href = 'index.html'; 
         } catch (error) {
             console.error("Logout Error:", error);
@@ -197,95 +181,7 @@ if (logoutButton) {
     });
 }
 
-// Listener utama untuk halaman notes.html (notes page)
-auth.onAuthStateChanged((user) => {
-    // Memastikan listener ini HANYA berjalan di halaman notes.html
-    const currentPath = window.location.pathname;
-    const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html'); // Tambahkan juga path absolut jika diperlukan
-
-    if (isNotesPage) {
-        if (user) {
-            // Pengguna sudah login
-            console.log('Pengguna login di halaman notes:', user.email, 'UID:', user.uid);
-            currentUserId = user.uid;
-
-            if (userEmailDisplay) {
-                userEmailDisplay.textContent = user.email;
-            }
-            
-            // Tampilkan seluruh konten aplikasi Haru Notes setelah user dipastikan login
-            // Gunakan requestAnimationFrame untuk memastikan DOM siap untuk perubahan display
-            requestAnimationFrame(() => {
-                if (appWrapper) appWrapper.style.display = 'block'; 
-                if (mainHeader) mainHeader.style.display = 'flex'; 
-            });
-
-            notesRef = database.ref('notes/' + currentUserId);
-
-            notesRef.on('value', (snapshot) => {
-                const notesData = snapshot.val();
-                renderNotes(notesData);
-            }, (error) => {
-                console.error("Error fetching notes:", error);
-                alert("Gagal memuat catatan: " + error.message);
-            });
-
-        } else {
-            // Pengguna belum login atau sudah logout
-            console.log('Pengguna belum login di halaman notes. Mengalihkan ke halaman login.');
-            currentUserId = null;
-            notesRef = null;
-
-            // Sembunyikan seluruh konten aplikasi Haru Notes
-            requestAnimationFrame(() => {
-                if (appWrapper) appWrapper.style.display = 'none'; 
-                if (mainHeader) mainHeader.style.display = 'none'; 
-            });
-
-            // PENTING: Redirect ke halaman login (index.html)
-            // Tambahkan sedikit delay untuk memastikan status Firebase Auth stabil
-            setTimeout(() => {
-                window.location.href = 'index.html'; 
-            }, 100); // Delay 100ms
-        }
-    } else {
-        // Jika script.js ini dijalankan di halaman lain (misalnya index.html)
-        // Pastikan app-wrapper dan mainHeader tersembunyi secara default
-        requestAnimationFrame(() => {
-            if (appWrapper) appWrapper.style.display = 'none';
-            if (mainHeader) mainHeader.style.display = 'none';
-        });
-    }
-});
-
-
-let lastScrollTop = 0;
-
-window.addEventListener('scroll', () => {
-    if (mainHeader && window.innerWidth <= 600) { 
-        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        if (scrollTop === 0) {
-            mainHeader.classList.remove('header-hidden');
-            lastScrollTop = scrollTop;
-            return;
-        }
-
-        if (scrollTop > lastScrollTop && scrollTop > mainHeader.offsetHeight) { 
-            mainHeader.classList.add('header-hidden');
-        } 
-        else if (scrollTop < lastScrollTop) {
-            mainHeader.classList.remove('header-hidden');
-        }
-        lastScrollTop = scrollTop;
-    } else if (mainHeader) {
-        mainHeader.classList.remove('header-hidden');
-    }
-});
-// script.js
-// ... kode fungsi lainnya (renderNotes, openModal, closeModal, event listeners untuk form dan delete, logout) ...
-
-// --- START New Text Styling Functions ---
+// --- START Text Styling Functions ---
 
 // Helper function to insert text at cursor position or wrap selection
 function insertAtCursor(textarea, textToInsert) {
@@ -339,14 +235,87 @@ uppercaseBtn.addEventListener('click', () => {
         textarea.selectionStart = start;
         textarea.selectionEnd = end;
     } else {
-        // If no text is selected, convert entire content (or prompt user)
-        // For simplicity, let's just do nothing if no text selected for Uppercase
-        // or you could convert entire content:
+        // Jika tidak ada teks yang dipilih, kita tidak melakukan apa-apa untuk uppercase
+        // Anda bisa memilih untuk mengubah seluruh konten jika diinginkan, tapi untuk saat ini biarkan hanya yang terseleksi
         // textarea.value = textarea.value.toUpperCase();
     }
     textarea.focus();
 });
 
-// --- END New Text Styling Functions ---
+// --- END Text Styling Functions ---
 
-// ... kode onAuthStateChanged di bawahnya ...
+
+auth.onAuthStateChanged((user) => {
+    const currentPath = window.location.pathname;
+    const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html'); 
+
+    if (isNotesPage) {
+        if (user) {
+            console.log('Pengguna login di halaman notes:', user.email, 'UID:', user.uid);
+            currentUserId = user.uid;
+
+            if (userEmailDisplay) {
+                userEmailDisplay.textContent = user.email;
+            }
+            
+            requestAnimationFrame(() => {
+                if (appWrapper) appWrapper.style.display = 'block'; 
+                if (mainHeader) mainHeader.style.display = 'flex'; 
+            });
+
+            notesRef = database.ref('notes/' + currentUserId);
+
+            notesRef.on('value', (snapshot) => {
+                const notesData = snapshot.val();
+                renderNotes(notesData);
+            }, (error) => {
+                console.error("Error fetching notes:", error);
+                alert("Gagal memuat catatan: " + error.message);
+            });
+
+        } else {
+            console.log('Pengguna belum login di halaman notes. Mengalihkan ke halaman login.');
+            currentUserId = null;
+            notesRef = null;
+
+            requestAnimationFrame(() => {
+                if (appWrapper) appWrapper.style.display = 'none'; 
+                if (mainHeader) mainHeader.style.display = 'none'; 
+            });
+
+            setTimeout(() => {
+                window.location.href = 'index.html'; 
+            }, 100);
+        }
+    } else {
+        requestAnimationFrame(() => {
+            if (appWrapper) appWrapper.style.display = 'none';
+            if (mainHeader) mainHeader.style.display = 'none';
+        });
+    }
+});
+
+
+let lastScrollTop = 0;
+
+window.addEventListener('scroll', () => {
+    if (mainHeader && window.innerWidth <= 600) { 
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop === 0) {
+            mainHeader.classList.remove('header-hidden');
+            lastScrollTop = scrollTop;
+            return;
+        }
+
+        if (scrollTop > lastScrollTop && scrollTop > mainHeader.offsetHeight) { 
+            mainHeader.classList.add('header-hidden');
+        } 
+        else if (scrollTop < lastScrollTop) {
+            mainHeader.classList.remove('header-hidden');
+        }
+        lastScrollTop = scrollTop;
+    } else if (mainHeader) {
+        mainHeader.classList.remove('header-hidden');
+    }
+});
