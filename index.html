@@ -3,38 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Haru Notes</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Login Haru Notes</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body class="login-body">
-    <div class="container login-container">
+    <div class="login-container">
         <h1>Haru Notes</h1>
         <h2>Login atau Daftar</h2>
-        <div id="auth-message" class="message" style="display: none;"></div>
-
+        <div id="login-message" class="message"></div>
         <form id="login-form">
             <div class="input-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" placeholder="Masukkan email Anda" required>
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Masukkan email Anda" required>
             </div>
             <div class="input-group">
-                <label for="password">Kata Sandi:</label>
-                <input type="password" id="password" placeholder="Masukkan kata sandi" required>
+                <label for="login-password">Kata Sandi</label>
+                <input type="password" id="login-password" placeholder="Masukkan kata sandi" required>
             </div>
-            <button type="submit">Login</button>
-            <button type="button" id="register-button">Daftar Akun Baru</button>
+            <button type="submit" class="btn">Login</button>
+            <button type="button" id="register-button" class="btn">Daftar Akun Baru</button>
         </form>
     </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-    
-    <script src="firebase-config.js"></script>
-    
-    <script src="auth.js"></script>
+    <script src="auth.js" defer></script> 
 </body>
 </html>

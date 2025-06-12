@@ -29,28 +29,43 @@ const database = firebase.database();
 console.log('auth object defined from auth.js:', !!auth);
 console.log('database object defined from auth.js:', !!database);
 
-// Pastikan elemen-elemen login sudah ada
+// Dapatkan referensi ke elemen login (ini mungkin null jika di notes.html)
 const loginForm = document.getElementById('login-form');
 const emailInput = document.getElementById('login-email');
 const passwordInput = document.getElementById('login-password');
 const registerButton = document.getElementById('register-button');
-const messageDiv = document.getElementById('login-message'); // Menambahkan elemen pesan
+const messageDiv = document.getElementById('login-message'); 
 
-// Fungsi untuk menampilkan pesan
+// Fungsi untuk menampilkan pesan (bisa digunakan di kedua halaman jika elemennya ada)
 function showMessage(msg, type) {
-    if (messageDiv) {
+    if (messageDiv) { // Pastikan messageDiv ada sebelum mencoba menggunakannya
         messageDiv.textContent = msg;
         messageDiv.className = `message ${type}`;
         messageDiv.style.display = 'block';
         setTimeout(() => {
             messageDiv.style.display = 'none';
-        }, 5000); // Pesan hilang setelah 5 detik
+        }, 5000); 
+    } else {
+        // Fallback jika messageDiv tidak ada (misalnya di notes.html)
+        console.log(`Pesan: ${msg} (tipe: ${type})`);
+        // Anda bisa menambahkan alert di sini untuk debugging, tapi biasanya tidak diinginkan di produksi
+        // alert(msg);
     }
 }
 
+
+// --- BAGIAN INI HANYA AKAN DIEKSEKUSI JIKA ELEMEN LOGIN FORM ADA DI HALAMAN ---
 if (loginForm) {
+    console.log('auth.js: loginForm ditemukan. Menyiapkan event listeners.');
+
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        // Pastikan emailInput dan passwordInput ada sebelum mengakses .value
+        if (!emailInput || !passwordInput) {
+            console.error('Email atau Password input tidak ditemukan.');
+            showMessage('Error: Form input tidak lengkap.', 'error');
+            return;
+        }
         const email = emailInput.value;
         const password = passwordInput.value;
 
@@ -65,50 +80,59 @@ if (loginForm) {
             showMessage(`Login gagal: ${error.message}`, 'error');
         }
     });
+
+    if (registerButton) { // Pastikan registerButton ada
+        registerButton.addEventListener('click', async () => {
+            // Pastikan emailInput dan passwordInput ada sebelum mengakses .value
+            if (!emailInput || !passwordInput) {
+                console.error('Email atau Password input tidak ditemukan untuk pendaftaran.');
+                showMessage('Error: Form input tidak lengkap untuk pendaftaran.', 'error');
+                return;
+            }
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showMessage('Email dan kata sandi tidak boleh kosong.', 'error');
+                return;
+            }
+
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                console.log('Pendaftaran berhasil:', email);
+                showMessage('Pendaftaran berhasil! Silakan login.', 'success');
+            } catch (error) {
+                console.error('Pendaftaran gagal:', error);
+                showMessage(`Pendaftaran gagal: ${error.message}`, 'error');
+            }
+        });
+    }
+
+} else {
+    console.log('auth.js: loginForm tidak ditemukan di halaman ini. Melewati inisialisasi form.');
 }
+// --- AKHIR BAGIAN SPESIFIK UNTUK HALAMAN LOGIN ---
 
-if (registerButton) {
-    registerButton.addEventListener('click', async () => {
-        const email = emailInput.value;
-        const password = passwordInput.value;
-
-        if (!email || !password) {
-            showMessage('Email dan kata sandi tidak boleh kosong.', 'error');
-            return;
-        }
-
-        try {
-            await auth.createUserWithEmailAndPassword(email, password);
-            console.log('Pendaftaran berhasil:', email);
-            showMessage('Pendaftaran berhasil! Silakan login.', 'success');
-            // Setelah mendaftar, mungkin langsung login atau biarkan pengguna login manual
-            // window.location.href = 'notes.html'; // Opsional: langsung login setelah register
-        } catch (error) {
-            console.error('Pendaftaran gagal:', error);
-            showMessage(`Pendaftaran gagal: ${error.message}`, 'error');
-        }
-    });
-}
 
 // Listener untuk mendeteksi perubahan status autentikasi
 // Ini akan berjalan di kedua halaman (index.html dan notes.html)
+// Karena auth.onAuthStateChanged adalah bagian dari Firebase SDK,
+// ia akan berjalan terlepas dari keberadaan elemen DOM login.
 auth.onAuthStateChanged((user) => {
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath.endsWith('/') || currentPath.endsWith('/index.html') || currentPath.endsWith('/haru-notes/') || currentPath.endsWith('/haru-notes/index.html');
     const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html');
 
     if (user) {
-        console.log('auth.js: Pengguna terdeteksi login:', user.email);
+        console.log('auth.js (onAuthStateChanged): Pengguna terdeteksi login:', user.email);
         if (isLoginPage) {
-            // Jika pengguna login dan berada di halaman login, redirect ke notes.html
-            console.log('auth.js: Redirecting to notes.html because user is logged in.');
+            console.log('auth.js (onAuthStateChanged): Redirecting from login page to notes.html.');
             window.location.href = 'notes.html';
         }
     } else {
-        console.log('auth.js: Pengguna tidak terdeteksi login.');
+        console.log('auth.js (onAuthStateChanged): Pengguna tidak terdeteksi login.');
         if (isNotesPage) {
-            // Jika pengguna tidak login dan berada di halaman notes.html, redirect ke index.html
-            console.log('auth.js: Redirecting to index.html because user is not logged in.');
+            console.log('auth.js (onAuthStateChanged): Redirecting from notes page to index.html.');
             window.location.href = 'index.html';
         }
     }
