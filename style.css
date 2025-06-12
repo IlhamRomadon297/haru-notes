@@ -270,6 +270,7 @@ main {
     overflow: hidden; /* Menyembunyikan konten yang meluap */
     text-overflow: ellipsis; /* Menambahkan elipsis jika konten terlalu panjang */
     display: -webkit-box;
+    -webkit-line-clamp: 5; /* Batasi hingga 5 baris */
     -webkit-box-orient: vertical;
     flex-grow: 1; /* Memastikan konten mengisi ruang yang tersedia */
 }
@@ -355,47 +356,44 @@ main {
     color: var(--text-secondary);
 }
 
-.form-group input[type="text"],
-.form-group textarea {
+/* Menyesuaikan styling untuk contenteditable div */
+.note-content-editor {
     width: 100%;
+    min-height: 150px; /* Minimal tinggi editor */
     padding: 12px 15px;
     border: 1px solid var(--border-color);
-    border-radius: 8px; /* Disesuaikan agar sama dengan tombol styling */
+    border-radius: 8px;
     font-size: 1em;
     box-sizing: border-box;
     transition: border-color 0.2s ease;
-    resize: vertical; /* Izinkan textarea diubah ukurannya secara vertikal */
-    min-height: 100px; /* Minimal tinggi textarea */
+    resize: vertical; /* Izinkan diubah ukurannya secara vertikal */
+    overflow-y: auto; /* Aktifkan scroll jika kontennya meluap */
+    line-height: 1.6; /* Keterbacaan yang lebih baik */
+    background-color: var(--card-bg); /* Latar belakang sama dengan card */
+    color: var(--text-primary); /* Warna teks sama dengan utama */
 }
 
-.form-group input[type="text"]:focus,
-.form-group textarea:focus {
+.note-content-editor:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
 }
 
-.form-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
+/* Styling untuk placeholder */
+.note-content-editor:empty:before {
+    content: attr(data-placeholder);
+    color: var(--text-secondary); /* Warna placeholder */
+    font-style: italic;
+    pointer-events: none; /* Agar tidak mengganggu klik */
+    display: block; /* Agar placeholder terlihat */
 }
 
-.form-actions .btn {
-    width: auto; /* Biarkan tombol menyesuaikan konten */
-    padding: 10px 20px;
-}
-
-#delete-note-btn.hidden {
-    display: none;
-}
 
 /* Styling untuk tombol styling teks */
 .style-buttons {
     display: flex;
     gap: 5px; /* Jarak antar tombol */
-    margin-bottom: 10px; /* Jarak antara tombol dan textarea */
+    margin-top: 10px; /* Jarak antara editor dan tombol */
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 5px;

@@ -57,7 +57,23 @@
                             <button type="button" id="italic-btn" class="style-btn" title="Italic">I</button>
                             <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
                         </div>
-                        <textarea id="note-content" rows="10" required></textarea>
+                        <div id="modal-container" class="modal-container hidden">
+            <div class="modal-content">
+                <button class="close-modal-btn">&times;</button>
+                <form id="note-form">
+                    <input type="hidden" id="note-id">
+                    <div class="form-group">
+                        <label for="note-title">Judul</label>
+                        <input type="text" id="note-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="note-content">Isi Catatan</label>
+                        <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Masukkan isi catatan Anda" required></div>
+                        <div class="style-buttons">
+                            <button type="button" id="bold-btn" class="style-btn" title="Bold">B</button>
+                            <button type="button" id="italic-btn" class="style-btn" title="Italic">I</button>
+                            <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
+                        </div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Simpan</button>
@@ -66,7 +82,6 @@
                 </form>
             </div>
         </div>
-    </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
