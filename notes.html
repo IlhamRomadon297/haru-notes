@@ -22,30 +22,42 @@
                 <span id="user-email-display" class="user-email"></span>
             </div>
             <div class="header-right">
-                <button id="add-note-btn" class="btn btn-primary">Buat Catatan Baru</button>
-                <button id="logout-button" class="btn btn-danger">Logout</button>
+                <button id="add-note-btn" class="btn btn-primary desktop-only">Buat Catatan Baru</button>
+                <button id="logout-button" class="btn btn-danger">
+                    <span class="desktop-only">Logout</span>
+                    <span class="mobile-only logout-icon" aria-hidden="true">⎋</span>
+                </button>
             </div>
         </header>
 
         <main class="container">
+            <button type="button" id="compose-bar" class="compose-bar" aria-label="Buat catatan baru">
+                <span class="compose-icon">✎</span>
+                <span class="compose-placeholder">Buat catatan...</span>
+            </button>
             <div id="no-notes-message" class="no-notes-message hidden">
-                Belum ada catatan. Buat yang baru yuk!
+                Belum ada catatan. Ketuk area di atas atau tombol + untuk memulai!
             </div>
             <div id="notes-container" class="notes-container">
                 </div>
         </main>
 
+        <button type="button" id="fab-add-note" class="fab mobile-only" aria-label="Buat catatan baru">+</button>
+
         <div id="modal-container" class="modal-container hidden">
             <div class="modal-content">
-                <button class="close-modal-btn">&times;</button>
+                <div class="modal-header-bar">
+                    <button type="button" class="close-modal-btn" aria-label="Tutup">&times;</button>
+                    <span id="autosave-status" class="autosave-status" aria-live="polite"></span>
+                </div>
                 <form id="note-form">
                     <input type="hidden" id="note-id">
                     <div class="form-group">
-                        <label for="note-title">Judul</label>
-                        <input type="text" id="note-title" required>
+                        <label for="note-title" class="visually-desktop">Judul</label>
+                        <input type="text" id="note-title" placeholder="Judul" required>
                     </div>
                     <div class="form-group">
-                        <label>Isi Catatan</label>
+                        <label class="visually-desktop">Isi Catatan</label>
                         <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Masukkan isi catatan Anda..." required></div>
                         <div class="style-buttons">
                             <button type="button" id="bold-btn" class="style-btn" title="Bold">B</button>
@@ -54,7 +66,7 @@
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="button" id="close-note-btn" class="btn btn-primary">Tutup</button>
                         <button type="button" id="delete-note-btn" class="btn btn-danger hidden">Hapus</button>
                     </div>
                 </form>

@@ -1,7 +1,7 @@
 :root {
-    --primary-color: #ffb6c1; /* Light Pink */
-    --secondary-color: #ffecd2; /* Light Peach */
-    --accent-color: #a7d9b4; /* Light Green */
+    --primary-color: #ffb6c1;
+    --secondary-color: #ffecd2;
+    --accent-color: #a7d9b4;
     --text-primary: #333;
     --text-secondary: #555;
     --background: #f8f8f8;
@@ -12,6 +12,21 @@
     --button-primary-hover-bg: #ff9fb4;
     --button-danger-bg: #ff6b6b;
     --button-danger-hover-bg: #ff4c4c;
+    --header-height: 64px;
+    --fab-size: 56px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.desktop-only {
+    display: inline;
+}
+
+.mobile-only {
+    display: none;
 }
 
 body {
@@ -193,6 +208,12 @@ button[type="submit"]:hover {
 .header-right {
     display: flex;
     gap: 10px;
+    align-items: center;
+}
+
+.header-right .btn {
+    width: auto;
+    margin-top: 0;
 }
 
 .btn {
@@ -224,30 +245,100 @@ button[type="submit"]:hover {
     background-color: var(--button-danger-hover-bg);
 }
 
+/* Compose bar (Google Keep style) */
+.compose-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    background: var(--card-bg);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px var(--shadow-light), 0 4px 12px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    text-align: left;
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+    box-sizing: border-box;
+}
+
+.compose-bar:hover {
+    box-shadow: 0 2px 6px var(--shadow-light), 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.compose-icon {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.compose-placeholder {
+    font-weight: 500;
+}
+
+/* FAB — mobile new note */
+.fab {
+    position: fixed;
+    right: 20px;
+    bottom: calc(20px + var(--safe-bottom));
+    width: var(--fab-size);
+    height: var(--fab-size);
+    border-radius: 50%;
+    border: none;
+    background: var(--button-primary-bg);
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 182, 193, 0.5), 0 6px 20px rgba(0, 0, 0, 0.15);
+    z-index: 900;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    margin: 0;
+    padding: 0;
+}
+
+.fab:hover {
+    background: var(--button-primary-hover-bg);
+    transform: scale(1.05);
+}
+
+.fab:active {
+    transform: scale(0.98);
+}
+
 /* Notes Container Styling */
-main {
+main,
+.container {
     padding: 20px;
-    max-width: 900px;
-    margin: 20px auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .notes-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    align-items: start;
 }
 
 .note-card {
     background-color: var(--card-bg);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px var(--shadow-light);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Untuk mendorong last-edited ke bawah */
-    min-height: 150px; /* Minimal tinggi kartu */
+    justify-content: space-between;
+    min-height: 120px;
+    border: 1px solid transparent;
 }
 
 .note-card:hover {
@@ -303,11 +394,14 @@ main {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.45);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     z-index: 2000;
+    padding: 40px 16px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .modal-container.hidden {
@@ -316,34 +410,90 @@ main {
 
 .modal-content {
     background-color: var(--card-bg);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    width: 90%;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    width: 100%;
     max-width: 600px;
     position: relative;
     box-sizing: border-box;
-    max-height: 90vh; /* Agar bisa di-scroll jika kontennya banyak */
-    overflow-y: auto; /* Aktifkan scroll jika kontennya meluap */
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    margin: auto;
+}
+
+.modal-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+    min-height: 36px;
 }
 
 .close-modal-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
     background: none;
     border: none;
-    font-size: 1.8em;
+    font-size: 1.75em;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 5px;
+    padding: 4px 8px;
     line-height: 1;
-    width: auto; /* Override default button width */
-    box-shadow: none; /* Remove button shadow */
+    width: auto;
+    margin: 0;
+    box-shadow: none;
+    flex-shrink: 0;
 }
 
 .close-modal-btn:hover {
     color: var(--primary-color);
+}
+
+.autosave-status {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    font-weight: 500;
+    flex: 1;
+    text-align: right;
+}
+
+.autosave-status.autosave-saving {
+    color: var(--primary-color);
+}
+
+.autosave-status.autosave-saved {
+    color: #2e7d32;
+}
+
+.autosave-status.autosave-error {
+    color: var(--button-danger-bg);
+}
+
+.autosave-status.autosave-pending {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.visually-desktop {
+    display: block;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.form-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    margin-top: 0;
+}
+
+#close-note-btn,
+#delete-note-btn {
+    width: auto;
 }
 
 .form-group {
@@ -355,6 +505,23 @@ main {
     margin-bottom: 8px;
     font-weight: 500;
     color: var(--text-secondary);
+}
+
+#note-title {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+#note-title:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
 }
 
 /* Menyesuaikan styling untuk contenteditable div */
@@ -430,55 +597,205 @@ main {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* Media Queries untuk responsif */
-@media (max-width: 600px) {
-    .login-container, .modal-content {
-        padding: 25px 20px;
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Tablet & mobile — Google Keep–like layout */
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: inline-flex !important;
+    }
+
+    .fab.mobile-only {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .login-container,
+    .modal-content {
+        padding: 20px 16px;
     }
 
     .main-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        flex-direction: row;
+        align-items: center;
+        padding: 10px 12px;
+        gap: 0;
+        min-height: var(--header-height);
     }
 
     .header-left {
-        width: 100%; /* Pastikan header-left mengambil lebar penuh di mobile */
-        align-items: flex-start; /* Rata kiri untuk teks Haru Notes dan email */
+        flex-direction: row;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .header-brand h1 {
+        font-size: 1.35em;
     }
 
     .user-email {
-        max-width: 100%; /* Lebar penuh di mobile */
-        text-align: left; /* Rata kiri */
-        margin-left: 0; /* Hapus margin kiri bawaan */
-    }
-
-    .header-right {
-        width: 100%;
-        justify-content: space-around;
-    }
-
-    .btn .desktop-text {
         display: none;
     }
 
-    .btn .mobile-icon {
-        display: inline;
+    .header-right {
+        width: auto;
+        gap: 8px;
+        flex-shrink: 0;
     }
 
-    .btn {
-        padding: 10px 15px;
+    #logout-button {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0;
+    }
+
+    .logout-icon {
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    main,
+    .container {
+        padding: 12px 12px calc(var(--fab-size) + 36px + var(--safe-bottom));
+    }
+
+    .compose-bar {
+        margin-bottom: 16px;
+        padding: 16px;
+        border-radius: 8px;
     }
 
     .notes-container {
-        grid-template-columns: 1fr; /* Satu kolom untuk mobile */
+        grid-template-columns: 1fr;
+        gap: 10px;
     }
 
     .note-card {
-        min-height: auto; 
+        min-height: auto;
+        padding: 14px 16px;
+        border-radius: 8px;
+    }
+
+    .note-card-title {
+        font-size: 1.05em;
+        margin-bottom: 6px;
+    }
+
+    .note-card-content {
+        -webkit-line-clamp: 4;
+        font-size: 0.9em;
+    }
+
+    .note-last-edited {
+        margin-top: 10px;
+        font-size: 0.75em;
+    }
+
+    /* Full-screen editor on mobile */
+    .modal-container {
+        padding: 0;
+        align-items: stretch;
+        background-color: var(--card-bg);
+    }
+
+    .modal-content {
+        max-width: none;
+        max-height: none;
+        min-height: 100%;
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 12px 16px calc(16px + var(--safe-bottom));
+        display: flex;
+        flex-direction: column;
+    }
+
+    #note-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .form-group:last-of-type {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .note-content-editor {
+        flex: 1;
+        min-height: 200px !important;
+    }
+
+    .style-buttons {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        margin-top: auto;
+        background: var(--card-bg);
+        padding: 8px;
+    }
+
+    .visually-desktop {
+        display: none;
+    }
+
+    #note-title {
+        font-size: 1.15em;
+        font-weight: 600;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 0;
+        padding: 12px 0;
+    }
+
+    #note-title:focus {
+        box-shadow: none;
+        border-color: var(--primary-color);
+    }
+
+    .form-actions {
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .form-actions .btn {
+        min-height: 44px;
     }
 
     .main-header.header-hidden {
         transform: translateY(-100%);
+    }
+}
+
+@media (min-width: 769px) {
+    .compose-bar {
+        max-width: 600px;
+    }
+
+    .header-left {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .login-container {
+        padding: 25px 20px;
     }
 }

@@ -1,33 +1,37 @@
 // script.js
-// Pastikan firebase-config.js sudah dimuat sebelum script.js
-// Tidak perlu mendeklarasikan `auth` dan `database` lagi di sini, cukup gunakan yang sudah ada dari firebase-config.js
 
-const appWrapper = document.getElementById('app-wrapper'); 
-const notesContainer = document.getElementById('notes-container'); 
+const appWrapper = document.getElementById('app-wrapper');
+const notesContainer = document.getElementById('notes-container');
 const addNoteBtn = document.getElementById('add-note-btn');
+const fabAddNoteBtn = document.getElementById('fab-add-note');
+const composeBar = document.getElementById('compose-bar');
 const modalContainer = document.getElementById('modal-container');
 const closeModalBtn = document.querySelector('.close-modal-btn');
+const closeNoteBtn = document.getElementById('close-note-btn');
 const noteForm = document.getElementById('note-form');
 const noteIdInput = document.getElementById('note-id');
 const noteTitleInput = document.getElementById('note-title');
-const noteContentEditor = document.getElementById('note-content-editor'); 
+const noteContentEditor = document.getElementById('note-content-editor');
 const deleteNoteBtn = document.getElementById('delete-note-btn');
 const noNotesMessage = document.getElementById('no-notes-message');
 const logoutButton = document.getElementById('logout-button');
-const userEmailDisplay = document.getElementById('user-email-display'); 
-const mainHeader = document.querySelector('.main-header'); 
+const userEmailDisplay = document.getElementById('user-email-display');
+const mainHeader = document.querySelector('.main-header');
+const autosaveStatus = document.getElementById('autosave-status');
 
-// New DOM Elements for Styling
 const boldBtn = document.getElementById('bold-btn');
 const italicBtn = document.getElementById('italic-btn');
 const uppercaseBtn = document.getElementById('uppercase-btn');
 
+let currentUserId = null;
+let notesRef = null;
+let notesListener = null;
 
-let currentUserId = null; 
-let notesRef = null; 
-
-// Tambahkan variabel untuk melacak listener Firebase
-let notesListener = null; 
+const AUTO_SAVE_DELAY_MS = 900;
+let autoSaveTimeout = null;
+let isAutoSaving = false;
+let lastSavedSnapshot = { title: '', content: '' };
+let isModalOpen = false;
 
 const formatTimestamp = (timestamp) => {
     if (!timestamp) return 'Tidak diketahui';
@@ -43,6 +47,44 @@ const formatTimestamp = (timestamp) => {
     return date.toLocaleString('id-ID', options);
 };
 
+const getPlainTextFromHtml = (html) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    return {
+        plainText: doc.body.textContent.trim(),
+        hasImage: !!doc.body.querySelector('img')
+    };
+};
+
+const getNoteSnapshot = () => ({
+    title: noteTitleInput.value.trim(),
+    content: noteContentEditor.innerHTML.trim()
+});
+
+const snapshotsEqual = (a, b) => a.title === b.title && a.content === b.content;
+
+const isNoteValid = (snapshot) => {
+    const { plainText, hasImage } = getPlainTextFromHtml(snapshot.content);
+    return snapshot.title.length > 0 && (plainText.length > 0 || hasImage);
+};
+
+const setAutosaveStatus = (state, message = '') => {
+    if (!autosaveStatus) return;
+    autosaveStatus.className = 'autosave-status';
+    const labels = {
+        idle: '',
+        pending: 'Perubahan belum disimpan',
+        saving: 'Menyimpan...',
+        saved: 'Tersimpan',
+        error: message || 'Gagal menyimpan'
+    };
+    const text = labels[state] ?? '';
+    autosaveStatus.textContent = text;
+    if (state && state !== 'idle') {
+        autosaveStatus.classList.add(`autosave-${state}`);
+    }
+};
+
 const renderNotes = (notesData) => {
     notesContainer.innerHTML = '';
     const notesArray = [];
@@ -52,7 +94,7 @@ const renderNotes = (notesData) => {
             notesArray.push({
                 id: key,
                 title: notesData[key].title,
-                content: notesData[key].content, 
+                content: notesData[key].content,
                 timestamp: notesData[key].timestamp
             });
         });
@@ -72,60 +114,168 @@ const renderNotes = (notesData) => {
 
             const noteContentElement = document.createElement('div');
             noteContentElement.classList.add('note-card-content');
-            
-            noteContentElement.innerHTML = note.content; 
+            noteContentElement.innerHTML = note.content;
 
             noteCard.innerHTML = `
                 <h2 class="note-card-title">${note.title}</h2>
                 <p class="note-last-edited">${lastEditedText}</p>
             `;
             noteCard.insertBefore(noteContentElement, noteCard.querySelector('.note-last-edited'));
-            
+
             noteCard.addEventListener('click', () => openModal(note));
             notesContainer.appendChild(noteCard);
         });
     }
 };
 
+const resetAutoSaveState = () => {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = null;
+    lastSavedSnapshot = { title: '', content: '' };
+    setAutosaveStatus('idle');
+};
+
 const openModal = (note = null) => {
     noteForm.reset();
-    noteContentEditor.innerHTML = ''; 
+    noteContentEditor.innerHTML = '';
+    resetAutoSaveState();
+
     if (note) {
         noteIdInput.value = note.id;
         noteTitleInput.value = note.title;
-        noteContentEditor.innerHTML = note.content; 
+        noteContentEditor.innerHTML = note.content;
         deleteNoteBtn.classList.remove('hidden');
+        lastSavedSnapshot = {
+            title: note.title,
+            content: note.content
+        };
+        setAutosaveStatus('saved');
     } else {
         noteIdInput.value = '';
-        deleteNoteBtn.classList.add('hidden'); 
+        deleteNoteBtn.classList.add('hidden');
     }
+
     updatePlaceholder();
-    noteContentEditor.focus(); 
+    isModalOpen = true;
+    document.body.classList.add('modal-open');
     modalContainer.classList.remove('hidden');
+    noteTitleInput.focus();
 };
 
-const closeModal = () => {
+const closeModal = async () => {
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = null;
+        await performAutoSave(true);
+    }
+
+    isModalOpen = false;
+    document.body.classList.remove('modal-open');
     modalContainer.classList.add('hidden');
+    resetAutoSaveState();
+};
+
+const performAutoSave = async (silent = false) => {
+    if (!isModalOpen || !currentUserId || isAutoSaving) {
+        return false;
+    }
+
+    const snapshot = getNoteSnapshot();
+
+    if (!isNoteValid(snapshot)) {
+        if (!silent) {
+            setAutosaveStatus('pending');
+        }
+        return false;
+    }
+
+    if (snapshotsEqual(snapshot, lastSavedSnapshot)) {
+        if (!silent) setAutosaveStatus('saved');
+        return true;
+    }
+
+    isAutoSaving = true;
+    setAutosaveStatus('saving');
+
+    const noteData = {
+        title: snapshot.title,
+        content: snapshot.content,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    try {
+        const id = noteIdInput.value;
+
+        if (id) {
+            await database.ref('notes/' + currentUserId).child(id).update(noteData);
+        } else {
+            const newRef = database.ref('notes/' + currentUserId).push();
+            await newRef.set(noteData);
+            noteIdInput.value = newRef.key;
+            deleteNoteBtn.classList.remove('hidden');
+        }
+
+        lastSavedSnapshot = { ...snapshot };
+        setAutosaveStatus('saved');
+        return true;
+    } catch (error) {
+        console.error('Error auto-save catatan:', error);
+        setAutosaveStatus('error', 'Gagal menyimpan');
+        return false;
+    } finally {
+        isAutoSaving = false;
+    }
+};
+
+const scheduleAutoSave = () => {
+    if (!isModalOpen) return;
+
+    const snapshot = getNoteSnapshot();
+
+    if (!isNoteValid(snapshot)) {
+        setAutosaveStatus('pending');
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = null;
+        return;
+    }
+
+    if (snapshotsEqual(snapshot, lastSavedSnapshot)) {
+        setAutosaveStatus('saved');
+        return;
+    }
+
+    setAutosaveStatus('pending');
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        performAutoSave();
+    }, AUTO_SAVE_DELAY_MS);
 };
 
 function updatePlaceholder() {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(noteContentEditor.innerHTML, 'text/html');
-    const plainText = doc.body.textContent.trim(); 
+    const { plainText, hasImage } = getPlainTextFromHtml(noteContentEditor.innerHTML);
 
-    if (plainText === '' && !noteContentEditor.querySelector('img')) { 
+    if (plainText === '' && !hasImage) {
         noteContentEditor.classList.remove('has-content');
     } else {
         noteContentEditor.classList.add('has-content');
     }
 }
 
+noteContentEditor.addEventListener('input', () => {
+    updatePlaceholder();
+    scheduleAutoSave();
+});
 
-noteContentEditor.addEventListener('input', updatePlaceholder);
+noteTitleInput.addEventListener('input', scheduleAutoSave);
 
+const handleOpenNewNote = () => openModal();
 
-addNoteBtn.addEventListener('click', () => openModal());
-closeModalBtn.addEventListener('click', closeModal);
+if (addNoteBtn) addNoteBtn.addEventListener('click', handleOpenNewNote);
+if (fabAddNoteBtn) fabAddNoteBtn.addEventListener('click', handleOpenNewNote);
+if (composeBar) composeBar.addEventListener('click', handleOpenNewNote);
+
+if (closeModalBtn) closeModalBtn.addEventListener('click', () => closeModal());
+if (closeNoteBtn) closeNoteBtn.addEventListener('click', () => closeModal());
 
 modalContainer.addEventListener('click', (e) => {
     if (e.target === modalContainer) {
@@ -133,52 +283,9 @@ modalContainer.addEventListener('click', (e) => {
     }
 });
 
-noteForm.addEventListener('submit', async (e) => {
+noteForm.addEventListener('submit', (e) => {
     e.preventDefault();
-
-    if (!currentUserId) {
-        alert('Anda harus login untuk menyimpan catatan.');
-        return;
-    }
-
-    const id = noteIdInput.value;
-    const title = noteTitleInput.value.trim();
-    const content = noteContentEditor.innerHTML.trim(); 
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, 'text/html');
-    const plainTextContentForValidation = doc.body.textContent.trim();
-
-    if (!title) { 
-        alert('Judul tidak boleh kosong!');
-        return;
-    }
-    
-    if (plainTextContentForValidation === '' && !doc.body.querySelector('img')) { 
-        alert('Isi Catatan tidak boleh kosong!');
-        return;
-    }
-
-    const noteData = { 
-        title, 
-        content, 
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    };
-    
-    try {
-        if (id) {
-            await database.ref('notes/' + currentUserId).child(id).update(noteData); 
-            console.log("Catatan berhasil diupdate!");
-        } else {
-            await database.ref('notes/' + currentUserId).push(noteData); 
-            console.log("Catatan baru berhasil ditambahkan!");
-        }
-        closeModal();
-    }
-     catch (error) {
-        console.error("Error menyimpan catatan:", error);
-        alert("Gagal menyimpan catatan: " + error.message);
-    }
+    closeModal();
 });
 
 deleteNoteBtn.addEventListener('click', async () => {
@@ -193,12 +300,15 @@ deleteNoteBtn.addEventListener('click', async () => {
     }
 
     try {
-        await database.ref('notes/' + currentUserId).child(id).remove(); 
-        console.log("Catatan berhasil dihapus!");
-        closeModal();
+        await database.ref('notes/' + currentUserId).child(id).remove();
+        console.log('Catatan berhasil dihapus!');
+        isModalOpen = false;
+        document.body.classList.remove('modal-open');
+        modalContainer.classList.add('hidden');
+        resetAutoSaveState();
     } catch (error) {
-        console.error("Error menghapus catatan:", error);
-        alert("Gagal menghapus catatan: " + error.message);
+        console.error('Error menghapus catatan:', error);
+        alert('Gagal menghapus catatan: ' + error.message);
     }
 });
 
@@ -207,37 +317,37 @@ if (logoutButton) {
         try {
             if (notesRef && notesListener) {
                 notesRef.off('value', notesListener);
-                notesListener = null; 
+                notesListener = null;
                 console.log('Firebase listener dimatikan.');
             }
-            await auth.signOut(); 
+            await auth.signOut();
             console.log('Pengguna berhasil logout.');
-            window.location.href = 'index.html'; 
+            window.location.href = 'index.html';
         } catch (error) {
-            console.error("Logout Error:", error);
+            console.error('Logout Error:', error);
             alert('Gagal logout: ' + error.message);
         }
     });
 }
 
-// --- START Text Styling Functions (Menggunakan execCommand) ---
-
 boldBtn.addEventListener('click', (event) => {
-    event.preventDefault(); 
+    event.preventDefault();
     document.execCommand('bold', false, null);
-    noteContentEditor.focus(); 
+    noteContentEditor.focus();
     updatePlaceholder();
+    scheduleAutoSave();
 });
 
 italicBtn.addEventListener('click', (event) => {
-    event.preventDefault(); 
+    event.preventDefault();
     document.execCommand('italic', false, null);
-    noteContentEditor.focus(); 
+    noteContentEditor.focus();
     updatePlaceholder();
+    scheduleAutoSave();
 });
 
 uppercaseBtn.addEventListener('click', (event) => {
-    event.preventDefault(); 
+    event.preventDefault();
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
@@ -245,9 +355,9 @@ uppercaseBtn.addEventListener('click', (event) => {
 
         if (selectedText) {
             const span = document.createElement('span');
-            span.style.textTransform = 'uppercase'; 
+            span.style.textTransform = 'uppercase';
             span.textContent = selectedText;
-            
+
             range.deleteContents();
             range.insertNode(span);
 
@@ -257,16 +367,14 @@ uppercaseBtn.addEventListener('click', (event) => {
             selection.addRange(newRange);
         }
     }
-    noteContentEditor.focus(); 
+    noteContentEditor.focus();
     updatePlaceholder();
+    scheduleAutoSave();
 });
 
-// --- END Text Styling Functions ---
-
-
-auth.onAuthStateChanged((user) => { 
+auth.onAuthStateChanged((user) => {
     const currentPath = window.location.pathname;
-    const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html'); 
+    const isNotesPage = currentPath.endsWith('/notes.html') || currentPath.endsWith('/haru-notes/notes.html');
 
     if (isNotesPage) {
         if (user) {
@@ -276,38 +384,37 @@ auth.onAuthStateChanged((user) => {
             if (userEmailDisplay) {
                 userEmailDisplay.textContent = user.email;
             }
-            
+
             requestAnimationFrame(() => {
-                if (appWrapper) appWrapper.style.display = 'block'; 
-                if (mainHeader) mainHeader.style.display = 'flex'; 
+                if (appWrapper) appWrapper.style.display = 'block';
+                if (mainHeader) mainHeader.style.display = 'flex';
             });
 
-            notesRef = database.ref('notes/' + currentUserId); 
+            notesRef = database.ref('notes/' + currentUserId);
 
             if (!notesListener) {
                 notesListener = notesRef.on('value', (snapshot) => {
                     const notesData = snapshot.val();
                     renderNotes(notesData);
                 }, (error) => {
-                    console.error("script.js: Error fetching notes:", error);
+                    console.error('script.js: Error fetching notes:', error);
                 });
             }
-
         } else {
             console.log('script.js: Pengguna belum login di halaman notes. Mengalihkan ke halaman login.');
             currentUserId = null;
-            
+
             if (notesRef && notesListener) {
                 notesRef.off('value', notesListener);
                 notesListener = null;
             }
 
             requestAnimationFrame(() => {
-                if (appWrapper) appWrapper.style.display = 'none'; 
-                if (mainHeader) mainHeader.style.display = 'none'; 
+                if (appWrapper) appWrapper.style.display = 'none';
+                if (mainHeader) mainHeader.style.display = 'none';
             });
 
-            window.location.href = 'index.html'; 
+            window.location.href = 'index.html';
         }
     } else {
         requestAnimationFrame(() => {
@@ -317,23 +424,21 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-
 let lastScrollTop = 0;
 
 window.addEventListener('scroll', () => {
-    if (mainHeader && window.innerWidth <= 600) { 
+    if (mainHeader && window.innerWidth <= 768) {
         let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
+
         if (scrollTop === 0) {
             mainHeader.classList.remove('header-hidden');
             lastScrollTop = scrollTop;
             return;
         }
 
-        if (scrollTop > lastScrollTop && scrollTop > mainHeader.offsetHeight) { 
+        if (scrollTop > lastScrollTop && scrollTop > mainHeader.offsetHeight) {
             mainHeader.classList.add('header-hidden');
-        } 
-        else if (scrollTop < lastScrollTop) {
+        } else if (scrollTop < lastScrollTop) {
             mainHeader.classList.remove('header-hidden');
         }
         lastScrollTop = scrollTop;
