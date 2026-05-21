@@ -2,44 +2,62 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Haru Notes</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
     <script src="auth.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <div id="app-wrapper" class="app-wrapper hidden">
+    <div id="app-loading" class="app-loading">
+        <div class="loading-logo">Haru <span>Notes</span></div>
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p style="margin:0;color:var(--text-muted);font-size:0.9rem;">Memuat...</p>
+    </div>
+
+    <div id="app-wrapper" class="app-wrapper is-hidden">
         <header class="main-header">
             <div class="header-left">
                 <div class="header-brand">
+                    <span class="brand-icon" aria-hidden="true">🌸</span>
                     <h1>Haru Notes</h1>
                 </div>
-                <span id="user-email-display" class="user-email"></span>
+                <span id="user-email-display" class="user-email desktop-only"></span>
             </div>
             <div class="header-right">
-                <button id="add-note-btn" class="btn btn-primary desktop-only">Buat Catatan Baru</button>
-                <button id="logout-button" class="btn btn-danger">
-                    <span class="desktop-only">Logout</span>
-                    <span class="mobile-only logout-icon" aria-hidden="true">⎋</span>
+                <button type="button" id="add-note-btn" class="btn btn-primary desktop-only">+ Catatan Baru</button>
+                <button type="button" id="logout-button" class="btn btn-danger">
+                    <span class="desktop-only">Keluar</span>
+                    <span class="mobile-only">Keluar</span>
                 </button>
             </div>
         </header>
 
-        <main class="container">
-            <button type="button" id="compose-bar" class="compose-bar" aria-label="Buat catatan baru">
+        <main class="notes-main">
+            <nav class="view-tabs" aria-label="Tampilan catatan">
+                <button type="button" id="tab-notes" class="view-tab active" data-view="notes">Catatan</button>
+                <button type="button" id="tab-archive" class="view-tab" data-view="archive">Arsip</button>
+            </nav>
+
+            <button type="button" id="compose-bar" class="compose-bar">
                 <span class="compose-icon">✎</span>
-                <span class="compose-placeholder">Buat catatan...</span>
+                <span class="compose-placeholder">Buat catatan musim semi...</span>
             </button>
+
             <div id="no-notes-message" class="no-notes-message hidden">
-                Belum ada catatan. Ketuk area di atas atau tombol + untuk memulai!
+                <span class="emoji">🌷</span>
+                <span id="no-notes-text">Belum ada catatan.<br>Ketuk kotak di atas atau tombol + untuk memulai!</span>
             </div>
-            <div id="notes-container" class="notes-container">
-                </div>
+
+            <div id="notes-container" class="notes-container"></div>
         </main>
 
         <button type="button" id="fab-add-note" class="fab mobile-only" aria-label="Buat catatan baru">+</button>
@@ -53,17 +71,21 @@
                 <form id="note-form">
                     <input type="hidden" id="note-id">
                     <div class="form-group">
-                        <label for="note-title" class="visually-desktop">Judul</label>
-                        <input type="text" id="note-title" placeholder="Judul" required>
+                        <label for="note-title" class="form-label-desktop">Judul</label>
+                        <input type="text" id="note-title" placeholder="Judul catatan" autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label class="visually-desktop">Isi Catatan</label>
-                        <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Masukkan isi catatan Anda..." required></div>
+                        <label class="form-label-desktop">Isi Catatan</label>
+                        <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Tulis catatanmu di sini..."></div>
                         <div class="style-buttons">
-                            <button type="button" id="bold-btn" class="style-btn" title="Bold">B</button>
-                            <button type="button" id="italic-btn" class="style-btn" title="Italic">I</button>
+                            <button type="button" id="bold-btn" class="style-btn" title="Bold"><b>B</b></button>
+                            <button type="button" id="italic-btn" class="style-btn" title="Italic"><i>I</i></button>
                             <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
                         </div>
+                    </div>
+                    <div class="modal-toolbar">
+                        <button type="button" id="pin-note-btn" class="toolbar-btn" title="Sematkan">📌 Sematkan</button>
+                        <button type="button" id="archive-note-btn" class="toolbar-btn" title="Arsipkan">📦 Arsipkan</button>
                     </div>
                     <div class="form-actions">
                         <button type="button" id="close-note-btn" class="btn btn-primary">Tutup</button>
@@ -73,6 +95,5 @@
             </div>
         </div>
     </div>
-    <script src="script.js" defer></script> 
 </body>
 </html>

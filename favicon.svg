@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Haru Notes">
+  <circle cx="16" cy="16" r="16" fill="#fff5f8"/>
+  <circle cx="16" cy="17" r="3.2" fill="#ff8fab"/>
+  <g fill="#ffb7c5">
+    <ellipse cx="16" cy="9.5" rx="3.2" ry="4.2"/>
+    <ellipse cx="22.2" cy="13.2" rx="3.2" ry="4.2" transform="rotate(72 22.2 13.2)"/>
+    <ellipse cx="20" cy="20.5" rx="3.2" ry="4.2" transform="rotate(144 20 20.5)"/>
+    <ellipse cx="12" cy="20.5" rx="3.2" ry="4.2" transform="rotate(216 12 20.5)"/>
+    <ellipse cx="9.8" cy="13.2" rx="3.2" ry="4.2" transform="rotate(288 9.8 13.2)"/>
+  </g>
+</svg>
