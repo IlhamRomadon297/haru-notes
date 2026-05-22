@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Haru Notes</title>
+    <script>
+        (function(){var t=localStorage.getItem('haru_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
+    </script>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,6 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="security.js" defer></script>
     <script src="auth.js" defer></script>
     <script src="script.js" defer></script>
 </head>
@@ -20,78 +24,223 @@
     <div id="app-loading" class="app-loading">
         <div class="loading-logo">Haru <span>Notes</span></div>
         <div class="loading-spinner" aria-hidden="true"></div>
-        <p style="margin:0;color:var(--text-muted);font-size:0.9rem;">Memuat...</p>
+        <p class="loading-text">Memuat...</p>
     </div>
 
     <div id="app-wrapper" class="app-wrapper is-hidden">
-        <header class="main-header">
-            <div class="header-left">
-                <div class="header-brand">
-                    <span class="brand-icon" aria-hidden="true">🌸</span>
-                    <h1>Haru Notes</h1>
-                </div>
-                <span id="user-email-display" class="user-email desktop-only"></span>
-            </div>
-            <div class="header-right">
-                <button type="button" id="add-note-btn" class="btn btn-primary desktop-only">+ Catatan Baru</button>
-                <button type="button" id="logout-button" class="btn btn-danger">
-                    <span class="desktop-only">Keluar</span>
-                    <span class="mobile-only">Keluar</span>
+        <div id="sidebar-backdrop" class="sidebar-backdrop hidden" aria-hidden="true"></div>
+
+        <aside id="app-sidebar" class="app-sidebar" aria-label="Menu navigasi">
+            <nav class="sidebar-nav">
+                <button type="button" id="nav-notes" class="sidebar-item active" data-view="notes" title="Catatan">
+                    <span class="sidebar-icon">🌸</span>
+                    <span class="sidebar-label">Catatan</span>
                 </button>
-            </div>
-        </header>
-
-        <main class="notes-main">
-            <nav class="view-tabs" aria-label="Tampilan catatan">
-                <button type="button" id="tab-notes" class="view-tab active" data-view="notes">Catatan</button>
-                <button type="button" id="tab-archive" class="view-tab" data-view="archive">Arsip</button>
+                <button type="button" id="nav-archive" class="sidebar-item" data-view="archive" title="Arsip">
+                    <span class="sidebar-icon">📦</span>
+                    <span class="sidebar-label">Arsip</span>
+                </button>
             </nav>
+        </aside>
 
-            <button type="button" id="compose-bar" class="compose-bar">
-                <span class="compose-icon">✎</span>
-                <span class="compose-placeholder">Buat catatan musim semi...</span>
-            </button>
+        <div class="app-body">
+            <header class="main-header">
+                <div class="header-left">
+                    <button type="button" id="menu-btn" class="icon-btn" aria-label="Buka menu">☰</button>
+                    <div class="header-brand">
+                        <img src="favicon.svg" alt="" class="brand-logo" width="28" height="28">
+                        <h1>Haru Notes</h1>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button type="button" id="add-note-btn" class="icon-btn icon-btn-accent desktop-only" aria-label="Catatan baru" title="Catatan baru">+</button>
+                    <button type="button" id="settings-btn" class="icon-btn" aria-label="Pengaturan" title="Pengaturan">⚙</button>
+                    <div class="profile-wrap">
+                        <button type="button" id="profile-btn" class="profile-avatar-btn" aria-label="Akun" aria-expanded="false">
+                            <img id="header-avatar-img" class="header-avatar-img hidden" alt="">
+                            <span id="header-avatar-fallback" class="header-avatar-fallback">?</span>
+                        </button>
+                        <div id="profile-dropdown" class="profile-dropdown hidden">
+                            <div class="profile-dropdown-head">
+                                <img id="dropdown-avatar-img" class="dropdown-avatar-img hidden" alt="">
+                                <span id="dropdown-avatar-fallback" class="dropdown-avatar-fallback">?</span>
+                                <div class="profile-dropdown-info">
+                                    <strong id="dropdown-display-name">Pengguna</strong>
+                                    <span id="dropdown-username">@username</span>
+                                    <small id="dropdown-email"></small>
+                                </div>
+                            </div>
+                            <button type="button" id="edit-profile-btn" class="dropdown-item">✎ Edit profil</button>
+                            <button type="button" id="logout-button" class="dropdown-item dropdown-item-danger">Keluar</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-            <div id="no-notes-message" class="no-notes-message hidden">
-                <span class="emoji">🌷</span>
-                <span id="no-notes-text">Belum ada catatan.<br>Ketuk kotak di atas atau tombol + untuk memulai!</span>
-            </div>
+            <main class="notes-main">
+                <div id="main-view-label" class="main-view-label">Catatan</div>
 
-            <div id="notes-container" class="notes-container"></div>
-        </main>
+                <button type="button" id="compose-bar" class="compose-bar">
+                    <span class="compose-icon">✎</span>
+                    <span class="compose-placeholder">Buat catatan musim semi...</span>
+                </button>
+
+                <div id="no-notes-message" class="no-notes-message hidden">
+                    <span class="emoji">🌷</span>
+                    <span id="no-notes-text">Belum ada catatan.</span>
+                </div>
+
+                <div id="notes-board" class="notes-board">
+                    <section id="pinned-section" class="notes-section hidden">
+                        <h2 class="section-title section-title-minimal" title="Disematkan">
+                            <span class="section-pin-icon" aria-hidden="true">📌</span>
+                            <span class="sr-only">Disematkan</span>
+                        </h2>
+                        <div id="pinned-container" class="notes-container"></div>
+                    </section>
+                    <section id="others-section" class="notes-section hidden">
+                        <h2 class="section-title section-title-minimal" title="Lainnya">
+                            <span class="section-icon" aria-hidden="true">📝</span>
+                            <span class="sr-only">Lainnya</span>
+                        </h2>
+                        <div id="others-container" class="notes-container"></div>
+                    </section>
+                </div>
+
+                <div id="archive-board" class="notes-board hidden">
+                    <div id="archive-container" class="notes-container"></div>
+                </div>
+            </main>
+        </div>
 
         <button type="button" id="fab-add-note" class="fab mobile-only" aria-label="Buat catatan baru">+</button>
 
+        <!-- Modal catatan -->
         <div id="modal-container" class="modal-container hidden">
-            <div class="modal-content">
-                <div class="modal-header-bar">
+            <div class="modal-content modal-note">
+                <div class="modal-header-bar modal-header-sticky">
                     <button type="button" class="close-modal-btn" aria-label="Tutup">&times;</button>
-                    <span id="autosave-status" class="autosave-status" aria-live="polite"></span>
-                </div>
-                <form id="note-form">
-                    <input type="hidden" id="note-id">
-                    <div class="form-group">
-                        <label for="note-title" class="form-label-desktop">Judul</label>
-                        <input type="text" id="note-title" placeholder="Judul catatan" autocomplete="off">
+                    <div class="modal-header-meta">
+                        <p id="note-modal-edited" class="note-modal-edited hidden"></p>
+                        <span id="autosave-status" class="autosave-status" aria-live="polite"></span>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label-desktop">Isi Catatan</label>
-                        <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Tulis catatanmu di sini..."></div>
-                        <div class="style-buttons">
-                            <button type="button" id="bold-btn" class="style-btn" title="Bold"><b>B</b></button>
-                            <button type="button" id="italic-btn" class="style-btn" title="Italic"><i>I</i></button>
-                            <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
+                </div>
+                <form id="note-form" class="note-form-layout">
+                    <input type="hidden" id="note-id">
+                    <div class="note-form-scroll">
+                        <div class="form-group">
+                            <label for="note-title" class="form-label-desktop">Judul</label>
+                            <input type="text" id="note-title" placeholder="Judul catatan" autocomplete="off">
+                        </div>
+                        <div class="form-group form-group-editor">
+                            <label class="form-label-desktop">Isi Catatan</label>
+                            <div id="note-content-editor" class="note-content-editor" contenteditable="true" data-placeholder="Tulis catatanmu di sini..."></div>
                         </div>
                     </div>
-                    <div class="modal-toolbar">
-                        <button type="button" id="pin-note-btn" class="toolbar-btn" title="Sematkan">📌 Sematkan</button>
-                        <button type="button" id="archive-note-btn" class="toolbar-btn" title="Arsipkan">📦 Arsipkan</button>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" id="close-note-btn" class="btn btn-primary">Tutup</button>
-                        <button type="button" id="delete-note-btn" class="btn btn-danger hidden">Hapus</button>
+                    <div class="modal-footer-sticky">
+                        <div class="style-buttons">
+                            <button type="button" id="bold-btn" class="style-btn" title="Tebal"><b>B</b></button>
+                            <button type="button" id="italic-btn" class="style-btn" title="Miring"><i>I</i></button>
+                            <button type="button" id="strike-btn" class="style-btn" title="Coret"><s>S</s></button>
+                            <button type="button" id="uppercase-btn" class="style-btn" title="Uppercase">Aa</button>
+                            <button type="button" id="quote-btn" class="style-btn" title="Kutipan">❝</button>
+                            <button type="button" id="spoiler-btn" class="style-btn" title="Spoiler">▮</button>
+                        </div>
+                        <div class="modal-toolbar modal-toolbar-icons">
+                            <button type="button" id="pin-note-btn" class="toolbar-icon-btn" title="Sematkan" aria-label="Sematkan">📌</button>
+                            <button type="button" id="lock-note-btn" class="toolbar-icon-btn" title="Kunci" aria-label="Kunci">🔒</button>
+                            <button type="button" id="archive-note-btn" class="toolbar-icon-btn" title="Arsipkan" aria-label="Arsipkan">📦</button>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="close-note-btn" class="btn btn-primary">Tutup</button>
+                            <button type="button" id="delete-note-btn" class="btn btn-danger hidden">Hapus</button>
+                        </div>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal pengaturan -->
+        <div id="settings-modal" class="modal-container hidden">
+            <div class="modal-content modal-settings">
+                <div class="modal-header-bar">
+                    <h2 class="settings-title">⚙ Pengaturan</h2>
+                    <button type="button" id="close-settings-btn" class="close-modal-btn" aria-label="Tutup">&times;</button>
+                </div>
+                <section class="settings-section">
+                    <h3>🌙 Tampilan</h3>
+                    <label class="toggle-row toggle-active-row">
+                        <span>Mode Gelap</span>
+                        <input type="checkbox" id="dark-mode-toggle">
+                    </label>
+                </section>
+                <section class="settings-section">
+                    <h3>🔐 PIN Keamanan Global</h3>
+                    <p class="settings-desc">Satu PIN untuk semua catatan terkunci. Disimpan sebagai hash di Firebase.</p>
+                    <div id="pin-status-text" class="pin-status">PIN belum diatur</div>
+                    <div id="pin-setup-form" class="settings-form">
+                        <label>PIN baru (4–8 digit)</label>
+                        <input type="password" id="new-pin-input" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+                        <label>Konfirmasi PIN</label>
+                        <input type="password" id="confirm-pin-input" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+                        <button type="button" id="save-pin-btn" class="btn btn-primary">Simpan PIN</button>
+                    </div>
+                    <div id="pin-change-form" class="settings-form hidden">
+                        <label>PIN lama</label>
+                        <input type="password" id="old-pin-input" inputmode="numeric" maxlength="8" autocomplete="off">
+                        <label>PIN baru</label>
+                        <input type="password" id="change-new-pin-input" inputmode="numeric" maxlength="8" autocomplete="off">
+                        <label>Konfirmasi PIN baru</label>
+                        <input type="password" id="change-confirm-pin-input" inputmode="numeric" maxlength="8" autocomplete="off">
+                        <button type="button" id="change-pin-btn" class="btn btn-primary">Ubah PIN</button>
+                        <button type="button" id="remove-pin-btn" class="btn btn-danger">Hapus PIN</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Modal edit profil -->
+        <div id="profile-modal" class="modal-container hidden">
+            <div class="modal-content modal-profile">
+                <div class="modal-header-bar">
+                    <h2 class="settings-title">✎ Edit Profil</h2>
+                    <button type="button" id="close-profile-btn" class="close-modal-btn" aria-label="Tutup">&times;</button>
+                </div>
+                <div class="profile-edit-body">
+                    <div class="profile-photo-edit">
+                        <div class="profile-photo-preview">
+                            <img id="profile-preview-img" class="hidden" alt="Foto profil">
+                            <span id="profile-preview-fallback">🌸</span>
+                        </div>
+                        <label class="btn btn-secondary photo-upload-label">
+                            Ganti foto
+                            <input type="file" id="profile-photo-input" accept="image/jpeg,image/png,image/webp" hidden>
+                        </label>
+                        <button type="button" id="remove-photo-btn" class="btn-text">Hapus foto</button>
+                    </div>
+                    <div class="settings-form">
+                        <label for="profile-display-name">Nama tampilan</label>
+                        <input type="text" id="profile-display-name" maxlength="40" placeholder="Nama Anda">
+                        <label for="profile-username">Username</label>
+                        <input type="text" id="profile-username" maxlength="20" placeholder="huruf, angka, _">
+                        <p class="settings-desc">Username: 3–20 karakter (a-z, 0-9, _)</p>
+                    </div>
+                    <button type="button" id="save-profile-btn" class="btn btn-primary">Simpan Profil</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal verifikasi PIN -->
+        <div id="pin-modal" class="modal-container hidden">
+            <div class="modal-content modal-pin-prompt">
+                <div class="modal-header-bar">
+                    <h2 class="settings-title">🔒 Masukkan PIN</h2>
+                    <button type="button" id="close-pin-modal-btn" class="close-modal-btn">&times;</button>
+                </div>
+                <p class="settings-desc">Catatan terkunci. Masukkan PIN global Anda.</p>
+                <input type="password" id="verify-pin-input" class="pin-input-large" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+                <p id="pin-error-msg" class="pin-error hidden"></p>
+                <button type="button" id="verify-pin-btn" class="btn btn-primary">Buka</button>
             </div>
         </div>
     </div>
