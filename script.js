@@ -364,6 +364,8 @@
             alert('Profil berhasil disimpan!');
         } catch (err) {
             alert('Gagal menyimpan profil: ' + (err.message || 'Terjadi kesalahan.'));
+        } finally {
+            HaruSecurity.clearUnlockSession();
         }
     };
 

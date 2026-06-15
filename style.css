@@ -240,8 +240,12 @@ body {
 }
 
 .sidebar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.15rem;
-    width: 24px;
+    width: 28px;
+    height: 28px;
     text-align: center;
     flex-shrink: 0;
 }
@@ -585,13 +589,6 @@ button {
 .locked-preview {
     font-style: italic;
     color: var(--text-muted);
-    filter: blur(0);
-}
-
-.note-card.is-locked .note-card-content:not(:has(.locked-preview)) {
-    filter: blur(6px);
-    user-select: none;
-    pointer-events: none;
 }
 
 /* Rich text — spoiler & kutipan */
