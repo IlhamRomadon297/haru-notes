@@ -45,102 +45,59 @@
     --border: #3c4043;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-    --header-bg: rgba(30, 30, 30, 0.96);
-    --sidebar-bg: #2d2e30;
-    --sidebar-active: #4a3728;
-    --overlay: rgba(0, 0, 0, 0.6);
-    --edited-text: #9aa0a6;
-    --pinned-accent: rgba(255, 143, 171, 0.35);
-}
+    .note-card.is-locked {
+        border-color: #c9b8e0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.08) 100%);
+    }
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
+    .note-card.is-locked .note-card-content {
+        position: relative;
+        overflow: hidden;
+        min-height: 120px;
+    }
 
-.hidden {
-    display: none !important;
-}
+    .note-card.is-locked .locked-backdrop {
+        position: absolute;
+        inset: 0;
+        filter: blur(12px);
+        opacity: 0.12;
+        user-select: none;
+        pointer-events: none;
+        background: transparent;
+    }
 
-.desktop-only {
-    display: inline;
-}
+    /* locked-preview must be single-line text only, no background */
+    .note-card.is-locked .locked-preview {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 4;
+        display: inline-block;
+        padding: 0 6px;
+        max-width: 86%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
 
-.mobile-only {
-    display: none;
-}
+    html[data-theme="light"] .note-card.is-locked .locked-preview {
+        color: var(--text);
+        text-shadow: 0 4px 10px rgba(0,0,0,0.85);
+    }
 
-html {
-    -webkit-text-size-adjust: 100%;
-}
-body {
-    font-family: var(--font);
-    margin: 0;
-    padding: 0;
-    background: var(--bg-gradient);
-    background-attachment: fixed;
-    color: var(--text);
-    line-height: 1.55;
-    min-height: 100vh;
-}
+    html[data-theme="dark"] .note-card.is-locked .locked-preview {
+        color: #ffffff;
+        text-shadow: none;
+    }
 
-/* Loading screen */
-.app-loading {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    background: var(--bg-gradient);
-    z-index: 9999;
-}
-
-.app-loading.hidden {
-    display: none !important;
-}
-
-.loading-logo {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--sakura-deep);
-    letter-spacing: -0.02em;
-}
-
-.loading-logo span {
-    color: var(--mint);
-}
-
-.loading-spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid var(--peach);
-    border-top-color: var(--sakura-deep);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* App shell */
-.app-wrapper {
-    min-height: 100vh;
-    display: flex;
-    position: relative;
-}
-
-.app-wrapper.is-hidden {
-    display: none;
-}
-
-.app-body {
-    flex: 1;
-    min-width: 0;
-    display: flex;
+    .note-card.is-locked .locked-backdrop img,
+    .note-card.is-locked .locked-backdrop video,
+    .note-card.is-locked .locked-backdrop iframe {
+        opacity: 0.1;
+    }
     flex-direction: column;
     min-height: 100vh;
 }
@@ -198,11 +155,31 @@ body {
     min-width: 0;
     margin: 10px auto;
     text-align: center;
-}
+    .app-wrapper.sidebar-collapsed .sidebar-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border-radius: 50%;
+        min-width: 0;
+        margin: 10px auto;
+        text-align: center;
+        background: rgba(255, 183, 197, 0.18);
+        background-repeat: no-repeat;
+        background-position: center center;
+    }
 
-.app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
-    margin: 0;
-}
+    .app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
+        margin: 0;
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+    }
 
 .app-wrapper.sidebar-collapsed .sidebar-nav {
     display: flex;
@@ -233,38 +210,44 @@ body {
     font-size: 0.95rem;
     font-weight: 700;
     text-align: left;
-    margin: 0;
-    box-shadow: none;
-}
+    .note-card.is-locked .locked-backdrop {
+        position: absolute;
+        inset: 0;
+        filter: blur(12px);
+        opacity: 0.12;
+        user-select: none;
+        pointer-events: none;
+        background: transparent;
+    }
 
-.sidebar-item:hover {
-    background: var(--peach);
-}
+    /* locked-preview: no background, single-line text only */
+    .note-card.is-locked .locked-preview {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 4;
+        display: inline-block;
+        padding: 0 6px;
+        max-width: 86%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
 
-.sidebar-item.active {
-    background: var(--sidebar-active);
-    color: var(--sakura-deep);
-}
+    /* Light theme: dark shadow under text for readability */
+    html[data-theme="light"] .note-card.is-locked .locked-preview {
+        color: var(--text);
+        text-shadow: 0 4px 10px rgba(0,0,0,0.85);
+    }
 
-[data-theme="dark"] .sidebar-item.active {
-    color: #f5d9a8;
-}
-
-.sidebar-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    width: 28px;
-    height: 28px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.sidebar-label {
-    transition: opacity 0.2s ease, width 0.2s ease;
-    white-space: nowrap;
-}
+    /* Dark theme: plain white text, no shadow */
+    html[data-theme="dark"] .note-card.is-locked .locked-preview {
+        color: #ffffff;
+        text-shadow: none;
+    }
 
 .sr-only {
     position: absolute;
