@@ -726,7 +726,7 @@
         contentEl.className = 'note-card-content';
 
         if (note.locked) {
-            contentEl.innerHTML = '<div class="locked-preview">🔒 Catatan Rahasia</div><div class="locked-backdrop">' + (note.content || '') + '</div>';
+            contentEl.innerHTML = '<div class="locked-preview outline">🔒 Catatan Rahasia</div><div class="locked-backdrop">' + (note.content || '') + '</div>';
             bindSpoilersIn(contentEl);
         } else {
             contentEl.innerHTML = note.content || '';
