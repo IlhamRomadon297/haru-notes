@@ -74,6 +74,25 @@
 html {
     -webkit-text-size-adjust: 100%;
 }
+    .app-wrapper.sidebar-collapsed .sidebar-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border-radius: 50%;
+        min-width: 0;
+        margin: 10px auto;
+        text-align: center;
+        background: rgba(255, 183, 197, 0.18);
+    }
+
+    .app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
+        margin: 0;
+    }
+
+    .app-wrapper.sidebar-collapsed .sidebar-nav {
 
 body {
     font-family: var(--font);
@@ -633,6 +652,47 @@ button {
     user-select: none;
     pointer-events: none;
     background: rgba(0, 0, 0, 0.5);
+    .note-card.is-locked .locked-backdrop {
+        position: absolute;
+        inset: 0;
+        filter: blur(12px);
+        opacity: 0.12;
+        user-select: none;
+        pointer-events: none;
+        /* no colored overlay - keep blur only */
+        background: transparent;
+    }
+
+    /* locked-preview: transparent pillless text, single line, style depends on theme */
+    .note-card.is-locked .locked-preview {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 4;
+        display: inline-block;
+        padding: 8px 12px;
+        max-width: 86%;
+        border-radius: 8px;
+        background: transparent;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 800;
+        font-size: 0.95rem;
+    }
+
+    /* Light theme: show dark shadow under text */
+    html[data-theme="light"] .note-card.is-locked .locked-preview {
+        color: var(--text);
+        text-shadow: 0 3px 8px rgba(0,0,0,0.6);
+    }
+
+    /* Dark theme: show white text, no shadow */
+    html[data-theme="dark"] .note-card.is-locked .locked-preview {
+        color: #ffffff;
+        text-shadow: none;
+    }
 }
 
 
