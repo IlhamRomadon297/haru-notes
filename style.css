@@ -189,18 +189,29 @@ body {
 }
 
 .app-wrapper.sidebar-collapsed .sidebar-item {
+    display: inline-flex;
     justify-content: center;
-    padding: 12px 0;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
     border-radius: 50%;
-    width: 46px;
     min-width: 0;
-    margin: 8px auto;
+    margin: 10px auto;
+    text-align: center;
+}
+
+.app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
+    margin: 0;
 }
 
 .app-wrapper.sidebar-collapsed .sidebar-nav {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 12px 0;
-    gap: 10px;
+    justify-content: center;
+    padding: 14px 0;
+    gap: 12px;
 }
 
 .sidebar-nav {
@@ -584,40 +595,56 @@ button {
 
 .note-card.is-locked {
     border-color: #c9b8e0;
-    background: linear-gradient(180deg, #faf8ff 0%, var(--surface) 35%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.08) 100%);
 }
 
 .note-card.is-locked .note-card-content {
     position: relative;
+    overflow: hidden;
+    min-height: 120px;
+}
+
+.note-card.is-locked .locked-backdrop {
+    position: absolute;
+    inset: 0;
+    filter: blur(14px);
+    opacity: 0.2;
+    user-select: none;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .note-card.is-locked .locked-preview {
     position: absolute;
     inset: 0;
-    z-index: 2;
+    z-index: 4;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 14px;
+    padding: 18px 14px;
     font-weight: 700;
-    color: var(--text);
-    background: rgba(255, 255, 255, 0.86);
-    backdrop-filter: blur(4px);
-    border-radius: var(--radius);
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
+    letter-spacing: 0.02em;
 }
 
-.note-card.is-locked .locked-backdrop {
-    filter: blur(8px);
-    opacity: 0.18;
-    user-select: none;
-    pointer-events: none;
+.note-card.is-locked .locked-preview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.note-card.is-locked .locked-preview > * {
+    position: relative;
+    z-index: 5;
 }
 
 .note-card.is-locked .locked-backdrop img,
 .note-card.is-locked .locked-backdrop video,
 .note-card.is-locked .locked-backdrop iframe {
-    opacity: 0.15;
+    opacity: 0.1;
 }
 
 /* Rich text — spoiler & kutipan */

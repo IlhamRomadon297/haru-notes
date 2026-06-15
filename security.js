@@ -27,6 +27,10 @@ const HaruSecurity = (function () {
         sessionStorage.setItem(SESSION_KEY, String(Date.now() + UNLOCK_MS));
     };
 
+    const setUnlockSessionFor = (ms) => {
+        sessionStorage.setItem(SESSION_KEY, String(Date.now() + Math.max(0, Number(ms) || 0)));
+    };
+
     const clearUnlockSession = () => {
         sessionStorage.removeItem(SESSION_KEY);
     };
@@ -48,6 +52,7 @@ const HaruSecurity = (function () {
         hashPin,
         verifyPin,
         setUnlockSession,
+        setUnlockSessionFor,
         clearUnlockSession,
         isUnlockSessionValid,
         validatePinFormat

@@ -446,10 +446,7 @@
 
     const scheduleRelock = () => {
         cancelRelock();
-        relockTimeout = setTimeout(() => {
-            HaruSecurity.clearUnlockSession();
-            renderNotes(allNotesData);
-        }, 10000);
+        HaruSecurity.setUnlockSessionFor(10000);
     };
 
     const showPinError = (msg) => {
@@ -500,7 +497,7 @@
             showPinError('PIN salah. Coba lagi.');
             return;
         }
-        HaruSecurity.setUnlockSession();
+        HaruSecurity.setUnlockSessionFor(10000);
         hidePinError();
         pinModal?.classList.add('hidden');
         const cb = pinVerifyCallback;
@@ -636,8 +633,8 @@
     };
 
     const handleNoteClick = (note) => {
-        if (note.locked) {
-            requirePinAccess(() => openModal(note), true);
+        if (note.locked && !canViewLocked()) {
+            requirePinAccess(() => openModal(note));
         } else {
             openModal(note);
         }
