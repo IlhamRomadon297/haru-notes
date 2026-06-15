@@ -190,16 +190,17 @@ body {
 
 .app-wrapper.sidebar-collapsed .sidebar-item {
     justify-content: center;
-    padding: 10px;
+    padding: 12px 0;
     border-radius: 50%;
-    width: 42px;
-    margin: 4px auto;
+    width: 46px;
+    min-width: 0;
+    margin: 8px auto;
 }
 
 .app-wrapper.sidebar-collapsed .sidebar-nav {
     align-items: center;
-    padding: 8px;
-    gap: 6px;
+    padding: 12px 0;
+    gap: 10px;
 }
 
 .sidebar-nav {
@@ -586,9 +587,37 @@ button {
     background: linear-gradient(180deg, #faf8ff 0%, var(--surface) 35%);
 }
 
-.locked-preview {
-    font-style: italic;
-    color: var(--text-muted);
+.note-card.is-locked .note-card-content {
+    position: relative;
+}
+
+.note-card.is-locked .locked-preview {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 14px;
+    font-weight: 700;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(4px);
+    border-radius: var(--radius);
+}
+
+.note-card.is-locked .locked-backdrop {
+    filter: blur(8px);
+    opacity: 0.18;
+    user-select: none;
+    pointer-events: none;
+}
+
+.note-card.is-locked .locked-backdrop img,
+.note-card.is-locked .locked-backdrop video,
+.note-card.is-locked .locked-backdrop iframe {
+    opacity: 0.15;
 }
 
 /* Rich text — spoiler & kutipan */

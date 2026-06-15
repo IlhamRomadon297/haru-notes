@@ -109,6 +109,7 @@
     let isModalOpen = false;
     let authReady = false;
     let pinVerifyCallback = null;
+    let relockTimeout = null;
     let userProfile = { displayName: '', username: '', photoUrl: '' };
     let currentUserEmail = '';
     let pendingPhotoUrl = null;
@@ -436,6 +437,21 @@
 
     const canViewLocked = () => !hasGlobalPin() || HaruSecurity.isUnlockSessionValid();
 
+    const cancelRelock = () => {
+        if (relockTimeout) {
+            clearTimeout(relockTimeout);
+            relockTimeout = null;
+        }
+    };
+
+    const scheduleRelock = () => {
+        cancelRelock();
+        relockTimeout = setTimeout(() => {
+            HaruSecurity.clearUnlockSession();
+            renderNotes(allNotesData);
+        }, 10000);
+    };
+
     const showPinError = (msg) => {
         if (!pinErrorMsg) return;
         pinErrorMsg.textContent = msg;
@@ -464,8 +480,8 @@
         }
     };
 
-    const requirePinAccess = (onSuccess) => {
-        if (canViewLocked()) {
+    const requirePinAccess = (onSuccess, force = false) => {
+        if (!force && canViewLocked()) {
             onSuccess();
             return;
         }
@@ -620,8 +636,8 @@
     };
 
     const handleNoteClick = (note) => {
-        if (note.locked && !canViewLocked()) {
-            requirePinAccess(() => openModal(note));
+        if (note.locked) {
+            requirePinAccess(() => openModal(note), true);
         } else {
             openModal(note);
         }
@@ -683,8 +699,9 @@
         const contentEl = document.createElement('div');
         contentEl.className = 'note-card-content';
 
-        if (note.locked && !canViewLocked()) {
-            contentEl.innerHTML = '<span class="locked-preview">🔒 Catatan terkunci — ketuk & masukkan PIN</span>';
+        if (note.locked) {
+            contentEl.innerHTML = '<div class="locked-preview">🔒 Catatan Terkunci</div><div class="locked-backdrop">' + (note.content || '') + '</div>';
+            bindSpoilersIn(contentEl);
         } else {
             contentEl.innerHTML = note.content || '';
             bindSpoilersIn(contentEl);
@@ -804,6 +821,7 @@
     const openModal = (note = null) => {
         noteForm?.reset();
         if (noteContentEditor) noteContentEditor.innerHTML = '';
+        cancelRelock();
         resetAutoSaveState();
 
         if (note) {
@@ -836,6 +854,9 @@
             await performAutoSave(true);
         }
         isModalOpen = false;
+        if (currentNoteMeta.locked) {
+            scheduleRelock();
+        }
         if (settingsModal?.classList.contains('hidden') && pinModal?.classList.contains('hidden')) {
             document.body.classList.remove('modal-open');
         }
