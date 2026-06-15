@@ -74,26 +74,6 @@
 html {
     -webkit-text-size-adjust: 100%;
 }
-    .app-wrapper.sidebar-collapsed .sidebar-item {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 48px;
-        height: 48px;
-        padding: 0;
-        border-radius: 50%;
-        min-width: 0;
-        margin: 10px auto;
-        text-align: center;
-        background: rgba(255, 183, 197, 0.18);
-    }
-
-    .app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
-        margin: 0;
-    }
-
-    .app-wrapper.sidebar-collapsed .sidebar-nav {
-
 body {
     font-family: var(--font);
     margin: 0;
