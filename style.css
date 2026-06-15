@@ -177,6 +177,10 @@ body {
     width: var(--sidebar-w-collapsed);
 }
 
+.app-wrapper.sidebar-collapsed .app-sidebar {
+    width: var(--sidebar-w-collapsed);
+}
+
 .app-wrapper.sidebar-collapsed .sidebar-label {
     opacity: 0;
     width: 0;

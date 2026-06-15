@@ -112,6 +112,7 @@
     let userProfile = { displayName: '', username: '', photoUrl: '' };
     let currentUserEmail = '';
     let pendingPhotoUrl = null;
+    let useNotesSettings = false;
 
     const formatTimestamp = (ts) => {
         if (!ts) return 'Tidak diketahui';
@@ -155,6 +156,46 @@
     };
 
     const hasGlobalPin = () => !!globalPinHash;
+
+    const getSettingsRef = () => {
+        if (useNotesSettings && notesRef) return notesRef.child('_settings');
+        return settingsRef;
+    };
+
+    const switchToNotesSettings = () => {
+        if (useNotesSettings || !notesRef) return;
+        useNotesSettings = true;
+        if (settingsListener && settingsRef) {
+            settingsRef.off('value', settingsListener);
+        }
+        settingsRef = notesRef.child('_settings');
+        settingsListener = settingsRef.on('value', (snap) => {
+            applySettingsData(snap.val());
+        });
+    };
+
+    const updateSettings = async (data) => {
+        if (!data) return;
+        let ref = getSettingsRef();
+        if (!ref) {
+            throw new Error('Referensi pengaturan belum tersedia');
+        }
+        try {
+            await ref.update(data);
+            return;
+        } catch (err) {
+            const message = (err && err.message) ? err.message.toLowerCase() : '';
+            const denied = err && (err.code === 'PERMISSION_DENIED' || message.includes('permission denied'));
+            if (denied && !useNotesSettings) {
+                switchToNotesSettings();
+                ref = getSettingsRef();
+                if (!ref) throw err;
+                await ref.update(data);
+                return;
+            }
+            throw err;
+        }
+    };
 
     const applyTheme = (dark) => {
         const theme = dark ? 'dark' : 'light';
@@ -307,8 +348,12 @@
             username: userCheck.value,
             photoUrl: pendingPhotoUrl !== null ? pendingPhotoUrl : (userProfile.photoUrl || '')
         };
+        if (!settingsRef && !notesRef) {
+            alert('Pengaturan belum siap. Tunggu beberapa saat dan coba lagi.');
+            return;
+        }
         try {
-            await settingsRef.update({
+            await updateSettings({
                 profile,
                 updatedAt: firebase.database.ServerValue.TIMESTAMP
             });
@@ -372,6 +417,7 @@
         const list = [];
         if (!notesData) return list;
         Object.keys(notesData).forEach((key) => {
+            if (key === '_settings' || key.startsWith('__')) return;
             const n = notesData[key];
             list.push({
                 id: key,
@@ -472,13 +518,9 @@
             alert(check.msg);
             return;
         }
-        if (!settingsRef) {
-            alert('Pengaturan belum siap. Coba kembali sebentar lagi.');
-            return;
-        }
         try {
             const hash = await HaruSecurity.hashPin(check.value, currentUserId);
-            await settingsRef.update({
+            await updateSettings({
                 pinHash: hash,
                 updatedAt: firebase.database.ServerValue.TIMESTAMP
             });
@@ -498,13 +540,9 @@
         if (newP !== confirm) { alert('Konfirmasi PIN baru tidak cocok.'); return; }
         const newCheck = HaruSecurity.validatePinFormat(newP);
         if (!newCheck.ok) { alert(newCheck.msg); return; }
-        if (!settingsRef) {
-            alert('Pengaturan belum siap. Coba kembali sebentar lagi.');
-            return;
-        }
         try {
             const hash = await HaruSecurity.hashPin(newCheck.value, currentUserId);
-            await settingsRef.update({ pinHash: hash, updatedAt: firebase.database.ServerValue.TIMESTAMP });
+            await updateSettings({ pinHash: hash, updatedAt: firebase.database.ServerValue.TIMESTAMP });
             globalPinHash = hash;
             HaruSecurity.clearUnlockSession();
             updatePinSettingsUI();
@@ -517,7 +555,12 @@
     const removeGlobalPin = async () => {
         if (!confirm('Hapus PIN? Semua catatan akan dibuka kuncinya.')) return;
         try {
-            await settingsRef.child('pinHash').remove();
+            const ref = getSettingsRef();
+            if (!ref) {
+                alert('Pengaturan belum siap. Coba kembali sebentar lagi.');
+                return;
+            }
+            await ref.child('pinHash').remove();
             globalPinHash = null;
             HaruSecurity.clearUnlockSession();
             if (allNotesData && currentUserId) {
@@ -912,8 +955,7 @@
         composeBar?.addEventListener('click', () => openModal());
 
         menuBtn?.addEventListener('click', () => {
-            if (appSidebar?.classList.contains('is-open')) closeSidebar();
-            else openSidebar();
+            toggleMenu();
         });
         sidebarBackdrop?.addEventListener('click', closeSidebar);
         navNotes?.addEventListener('click', () => switchView('notes'));
@@ -961,15 +1003,13 @@
         darkModeToggle?.addEventListener('change', async () => {
             const dark = darkModeToggle.checked;
             applyTheme(dark);
-            if (settingsRef) {
-                try {
-                    await settingsRef.update({
-                        darkMode: dark,
-                        updatedAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                } catch (err) {
-                    console.warn('Gagal menyimpan tema:', err);
-                }
+            try {
+                await updateSettings({
+                    darkMode: dark,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch (err) {
+                console.warn('Gagal menyimpan tema:', err);
             }
         });
 
@@ -1115,15 +1155,22 @@
         currentUserId = user.uid;
         currentUserEmail = user.email || '';
 
-        settingsRef = database.ref('userSettings/' + currentUserId);
-        if (settingsListener) settingsRef.off('value', settingsListener);
-        settingsListener = settingsRef.on('value', (snap) => {
-            applySettingsData(snap.val());
-        });
-
         notesRef = database.ref('notes/' + currentUserId);
         if (notesListener) notesRef.off('value', notesListener);
         notesListener = notesRef.on('value', (snap) => renderNotes(snap.val()));
+
+        settingsRef = database.ref('userSettings/' + currentUserId);
+        useNotesSettings = false;
+        if (settingsListener && settingsRef) {
+            settingsRef.off('value', settingsListener);
+        }
+        settingsListener = settingsRef.on('value', (snap) => {
+            applySettingsData(snap.val());
+        }, (error) => {
+            if (error && error.code === 'PERMISSION_DENIED') {
+                switchToNotesSettings();
+            }
+        });
 
         updateViewUI();
         initSidebarLayout();
