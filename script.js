@@ -110,6 +110,7 @@
     let authReady = false;
     let pinVerifyCallback = null;
     let relockTimeout = null;
+    let timezone = 'Asia/Jakarta';
     let userProfile = { displayName: '', username: '', photoUrl: '' };
     let currentUserEmail = '';
     let pendingPhotoUrl = null;
@@ -154,6 +155,7 @@
     const showApp = () => {
         appLoading?.classList.add('hidden');
         appWrapper?.classList.remove('is-hidden');
+        startClock();
     };
 
     const hasGlobalPin = () => !!globalPinHash;
@@ -379,6 +381,7 @@
             username: profile.username || '',
             photoUrl: profile.photoUrl || ''
         };
+        timezone = data.timezone || timezone;
         if (!userProfile.displayName && currentUserEmail) {
             userProfile.displayName = currentUserEmail.split('@')[0];
         }
@@ -386,6 +389,32 @@
         updatePinSettingsUI();
         updateProfileUI();
         renderNotes(allNotesData);
+    };
+
+    const updateClockDisplay = () => {
+        const el = $('clock-display');
+        if (!el) return;
+        try {
+            const now = new Date();
+            const opts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: timezone };
+            const s = new Intl.DateTimeFormat('en-GB', opts).format(now);
+            el.textContent = s;
+        } catch (e) {
+            const now = new Date();
+            el.textContent = now.toLocaleTimeString();
+        }
+    };
+
+    let _clockInterval = null;
+    const startClock = () => {
+        if (_clockInterval) return;
+        updateClockDisplay();
+        _clockInterval = setInterval(updateClockDisplay, 1000);
+    };
+
+    const stopClock = () => {
+        if (_clockInterval) clearInterval(_clockInterval);
+        _clockInterval = null;
     };
 
     const updateViewUI = () => {
@@ -697,7 +726,7 @@
         contentEl.className = 'note-card-content';
 
         if (note.locked) {
-            contentEl.innerHTML = '<div class="locked-preview">🔒 Catatan Terkunci</div><div class="locked-backdrop">' + (note.content || '') + '</div>';
+            contentEl.innerHTML = '<div class="locked-preview outline">🔒 Catatan Rahasia</div><div class="locked-backdrop">' + (note.content || '') + '</div>';
             bindSpoilersIn(contentEl);
         } else {
             contentEl.innerHTML = note.content || '';
@@ -1156,6 +1185,20 @@
             e.preventDefault();
             wrapSelection('span', 'spoiler');
         });
+
+        const tzSelect = $('timezone-select');
+        if (tzSelect) {
+            tzSelect.value = timezone || 'Asia/Jakarta';
+            tzSelect.addEventListener('change', async () => {
+                const v = tzSelect.value;
+                timezone = v;
+                try {
+                    await updateSettings({ timezone: v, updatedAt: firebase.database.ServerValue.TIMESTAMP });
+                } catch (err) {
+                    console.warn('Gagal menyimpan zona waktu', err);
+                }
+            });
+        }
 
         let lastScrollTop = 0;
         window.addEventListener('scroll', () => {

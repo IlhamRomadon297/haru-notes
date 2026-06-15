@@ -274,10 +274,31 @@ body {
     padding: 0;
     margin: -1px;
     overflow: hidden;
+.app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 183, 197, 0.18);
+}
     clip: rect(0, 0, 0, 0);
     border: 0;
+.clock-display {
+    margin-left: 12px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
 }
 
+.sidebar-section-label {
+    margin-left: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--sakura-deep);
+}
 /* Header */
 .main-header {
     background: var(--header-bg);
@@ -614,31 +635,34 @@ button {
     background: rgba(0, 0, 0, 0.5);
 }
 
+
+
 .note-card.is-locked .locked-preview {
     position: absolute;
-    inset: 0;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     z-index: 4;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    padding: 18px 14px;
-    font-weight: 700;
+    padding: 12px 18px;
+    max-width: 80%;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.35);
     color: #fff;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
-    letter-spacing: 0.02em;
+    font-weight: 800;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    -webkit-text-stroke: 0.6px rgba(0,0,0,0.45);
 }
 
-.note-card.is-locked .locked-preview::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-}
-
-.note-card.is-locked .locked-preview > * {
-    position: relative;
-    z-index: 5;
+.note-card.is-locked .locked-preview.outline {
+    background: transparent;
+    color: var(--text);
+    -webkit-text-stroke: 0.6px rgba(255,255,255,0.0);
+    box-shadow: none;
+    border: 2px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.88);
 }
 
 .note-card.is-locked .locked-backdrop img,

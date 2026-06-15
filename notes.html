@@ -50,6 +50,7 @@
                     <div class="header-brand">
                         <img src="favicon.svg" alt="" class="brand-logo" width="28" height="28">
                         <h1>Haru Notes</h1>
+                        <span id="clock-display" class="clock-display" aria-live="polite"></span>
                     </div>
                 </div>
                 <div class="header-right">
@@ -94,14 +95,14 @@
                     <section id="pinned-section" class="notes-section hidden">
                         <h2 class="section-title section-title-minimal" title="Disematkan">
                             <span class="section-pin-icon" aria-hidden="true">📌</span>
-                            <span class="sr-only">Disematkan</span>
+                            <span class="sidebar-section-label">Catatan Tersemat</span>
                         </h2>
                         <div id="pinned-container" class="notes-container"></div>
                     </section>
                     <section id="others-section" class="notes-section hidden">
                         <h2 class="section-title section-title-minimal" title="Lainnya">
                             <span class="section-icon" aria-hidden="true">📝</span>
-                            <span class="sr-only">Lainnya</span>
+                            <span class="sidebar-section-label">Catatan Lainnya</span>
                         </h2>
                         <div id="others-container" class="notes-container"></div>
                     </section>
@@ -174,6 +175,17 @@
                         <span>Mode Gelap</span>
                         <input type="checkbox" id="dark-mode-toggle">
                     </label>
+                </section>
+                <section class="settings-section">
+                    <h3>🕒 Zona Waktu</h3>
+                    <p class="settings-desc">Pilih zona waktu untuk jam real-time.</p>
+                    <select id="timezone-select" class="timezone-select">
+                        <option value="Asia/Jakarta">WIB (Asia/Jakarta)</option>
+                        <option value="UTC">UTC</option>
+                        <option value="Asia/Tokyo">JST (Asia/Tokyo)</option>
+                        <option value="Europe/London">Europe/London</option>
+                        <option value="America/New_York">America/New_York</option>
+                    </select>
                 </section>
                 <section class="settings-section">
                     <h3>🔐 PIN Keamanan Global</h3>
