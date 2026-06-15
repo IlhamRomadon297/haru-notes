@@ -45,61 +45,6 @@
     --border: #3c4043;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-    .note-card.is-locked {
-        border-color: #c9b8e0;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.08) 100%);
-    }
-
-    .note-card.is-locked .note-card-content {
-        position: relative;
-        overflow: hidden;
-        min-height: 120px;
-    }
-
-    .note-card.is-locked .locked-backdrop {
-        position: absolute;
-        inset: 0;
-        filter: blur(12px);
-        opacity: 0.12;
-        user-select: none;
-        pointer-events: none;
-        background: transparent;
-    }
-
-    /* locked-preview must be single-line text only, no background */
-    .note-card.is-locked .locked-preview {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 4;
-        display: inline-block;
-        padding: 0 6px;
-        max-width: 86%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: 700;
-        font-size: 0.95rem;
-    }
-
-    html[data-theme="light"] .note-card.is-locked .locked-preview {
-        color: var(--text);
-        text-shadow: 0 4px 10px rgba(0,0,0,0.85);
-    }
-
-    html[data-theme="dark"] .note-card.is-locked .locked-preview {
-        color: #ffffff;
-        text-shadow: none;
-    }
-
-    .note-card.is-locked .locked-backdrop img,
-    .note-card.is-locked .locked-backdrop video,
-    .note-card.is-locked .locked-backdrop iframe {
-        opacity: 0.1;
-    }
-    flex-direction: column;
-    min-height: 100vh;
 }
 
 /* Sidebar */
@@ -133,6 +78,13 @@
     width: var(--sidebar-w-collapsed);
 }
 
+.app-wrapper.sidebar-collapsed .sidebar-label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 .app-wrapper.sidebar-collapsed .sidebar-item {
     display: flex;
     justify-content: center;
@@ -148,12 +100,13 @@
 }
 
 .app-wrapper.sidebar-collapsed .sidebar-item .sidebar-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin: 0;
+    font-size: 1.1rem;
 }
 
 .app-wrapper.sidebar-collapsed .sidebar-nav {
@@ -185,42 +138,6 @@
     font-size: 0.95rem;
     font-weight: 700;
     text-align: left;
-}
-
-.note-card.is-locked .locked-backdrop {
-    position: absolute;
-    inset: 0;
-    filter: blur(12px);
-    opacity: 0.12;
-    user-select: none;
-    pointer-events: none;
-    background: transparent;
-}
-
-.note-card.is-locked .locked-preview {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 4;
-    display: inline-block;
-    padding: 0 6px;
-    max-width: 86%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-weight: 700;
-    font-size: 0.95rem;
-}
-
-html[data-theme="light"] .note-card.is-locked .locked-preview {
-    color: var(--text);
-    text-shadow: 0 4px 10px rgba(0,0,0,0.85);
-}
-
-html[data-theme="dark"] .note-card.is-locked .locked-preview {
-    color: #ffffff;
-    text-shadow: none;
 }
 
 .sr-only {
