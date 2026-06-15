@@ -21,8 +21,8 @@
     --overlay: rgba(61, 61, 78, 0.45);
     --radius: 12px;
     --header-h: 56px;
-    --sidebar-w: 260px;
-    --sidebar-w-collapsed: 72px;
+    --sidebar-w: 220px;
+    --sidebar-w-collapsed: 64px;
     --edited-text: #8a8a9a;
     --pinned-accent: rgba(255, 143, 171, 0.18);
     --fab-size: 56px;
@@ -186,15 +186,16 @@ body {
 
 .app-wrapper.sidebar-collapsed .sidebar-item {
     justify-content: center;
-    padding: 12px;
+    padding: 10px;
     border-radius: 50%;
-    width: 48px;
+    width: 42px;
     margin: 4px auto;
 }
 
 .app-wrapper.sidebar-collapsed .sidebar-nav {
     align-items: center;
     padding: 8px;
+    gap: 6px;
 }
 
 .sidebar-nav {

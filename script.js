@@ -53,6 +53,7 @@
     const autosaveStatus = $('autosave-status');
     const boldBtn = $('bold-btn');
     const italicBtn = $('italic-btn');
+    const underlineBtn = $('underline-btn');
     const strikeBtn = $('strike-btn');
     const uppercaseBtn = $('uppercase-btn');
     const quoteBtn = $('quote-btn');
@@ -306,21 +307,30 @@
             username: userCheck.value,
             photoUrl: pendingPhotoUrl !== null ? pendingPhotoUrl : (userProfile.photoUrl || '')
         };
-        await settingsRef.update({
-            profile,
-            updatedAt: firebase.database.ServerValue.TIMESTAMP
-        });
-        userProfile = profile;
-        pendingPhotoUrl = null;
-        updateProfileUI();
-        closeProfileEdit();
-        alert('Profil berhasil disimpan!');
+        try {
+            await settingsRef.update({
+                profile,
+                updatedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+            userProfile = profile;
+            pendingPhotoUrl = null;
+            updateProfileUI();
+            closeProfileEdit();
+            alert('Profil berhasil disimpan!');
+        } catch (err) {
+            alert('Gagal menyimpan profil: ' + (err.message || 'Terjadi kesalahan.'));
+        }
     };
 
     const applySettingsData = (data) => {
         data = data || {};
         globalPinHash = data.pinHash || null;
-        userProfile = data.profile || {};
+        const profile = data.profile || {};
+        userProfile = {
+            displayName: profile.displayName || '',
+            username: profile.username || '',
+            photoUrl: profile.photoUrl || ''
+        };
         if (!userProfile.displayName && currentUserEmail) {
             userProfile.displayName = currentUserEmail.split('@')[0];
         }
@@ -462,14 +472,22 @@
             alert(check.msg);
             return;
         }
-        const hash = await HaruSecurity.hashPin(check.value, currentUserId);
-        await settingsRef.update({
-            pinHash: hash,
-            updatedAt: firebase.database.ServerValue.TIMESTAMP
-        });
-        globalPinHash = hash;
-        updatePinSettingsUI();
-        alert('PIN berhasil disimpan!');
+        if (!settingsRef) {
+            alert('Pengaturan belum siap. Coba kembali sebentar lagi.');
+            return;
+        }
+        try {
+            const hash = await HaruSecurity.hashPin(check.value, currentUserId);
+            await settingsRef.update({
+                pinHash: hash,
+                updatedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+            globalPinHash = hash;
+            updatePinSettingsUI();
+            alert('PIN berhasil disimpan!');
+        } catch (err) {
+            alert('Gagal menyimpan PIN: ' + (err.message || 'Terjadi kesalahan.'));
+        }
     };
 
     const changeGlobalPin = async (oldP, newP, confirm) => {
@@ -480,30 +498,42 @@
         if (newP !== confirm) { alert('Konfirmasi PIN baru tidak cocok.'); return; }
         const newCheck = HaruSecurity.validatePinFormat(newP);
         if (!newCheck.ok) { alert(newCheck.msg); return; }
-        const hash = await HaruSecurity.hashPin(newCheck.value, currentUserId);
-        await settingsRef.update({ pinHash: hash, updatedAt: firebase.database.ServerValue.TIMESTAMP });
-        globalPinHash = hash;
-        HaruSecurity.clearUnlockSession();
-        updatePinSettingsUI();
-        alert('PIN berhasil diubah.');
+        if (!settingsRef) {
+            alert('Pengaturan belum siap. Coba kembali sebentar lagi.');
+            return;
+        }
+        try {
+            const hash = await HaruSecurity.hashPin(newCheck.value, currentUserId);
+            await settingsRef.update({ pinHash: hash, updatedAt: firebase.database.ServerValue.TIMESTAMP });
+            globalPinHash = hash;
+            HaruSecurity.clearUnlockSession();
+            updatePinSettingsUI();
+            alert('PIN berhasil diubah.');
+        } catch (err) {
+            alert('Gagal mengubah PIN: ' + (err.message || 'Terjadi kesalahan.'));
+        }
     };
 
     const removeGlobalPin = async () => {
         if (!confirm('Hapus PIN? Semua catatan akan dibuka kuncinya.')) return;
-        await settingsRef.child('pinHash').remove();
-        globalPinHash = null;
-        HaruSecurity.clearUnlockSession();
-        if (allNotesData && currentUserId) {
-            const updates = {};
-            Object.keys(allNotesData).forEach((id) => {
-                if (allNotesData[id].locked) updates[id + '/locked'] = false;
-            });
-            if (Object.keys(updates).length) {
-                await database.ref('notes/' + currentUserId).update(updates);
+        try {
+            await settingsRef.child('pinHash').remove();
+            globalPinHash = null;
+            HaruSecurity.clearUnlockSession();
+            if (allNotesData && currentUserId) {
+                const updates = {};
+                Object.keys(allNotesData).forEach((id) => {
+                    if (allNotesData[id].locked) updates[id + '/locked'] = false;
+                });
+                if (Object.keys(updates).length) {
+                    await database.ref('notes/' + currentUserId).update(updates);
+                }
             }
+            updatePinSettingsUI();
+            alert('PIN dihapus. Catatan terkunci telah dibuka.');
+        } catch (err) {
+            alert('Gagal menghapus PIN: ' + (err.message || 'Terjadi kesalahan.'));
         }
-        updatePinSettingsUI();
-        alert('PIN dihapus. Catatan terkunci telah dibuka.');
     };
 
     const updateModalEdited = () => {
@@ -932,10 +962,14 @@
             const dark = darkModeToggle.checked;
             applyTheme(dark);
             if (settingsRef) {
-                await settingsRef.update({
-                    darkMode: dark,
-                    updatedAt: firebase.database.ServerValue.TIMESTAMP
-                });
+                try {
+                    await settingsRef.update({
+                        darkMode: dark,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } catch (err) {
+                    console.warn('Gagal menyimpan tema:', err);
+                }
             }
         });
 
@@ -1022,6 +1056,12 @@
         italicBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             document.execCommand('italic', false, null);
+            noteContentEditor?.focus();
+            scheduleAutoSave();
+        });
+        underlineBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.execCommand('underline', false, null);
             noteContentEditor?.focus();
             scheduleAutoSave();
         });
